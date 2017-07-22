@@ -7,6 +7,7 @@ g.start();
 */
 function setup() {
     console.log("setup");
+    g.backgroundColor = "cyan";
     //Change the state to `play`
     g.state = play;
 }
