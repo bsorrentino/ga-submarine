@@ -1,11 +1,79 @@
 
+type Coordinate = { x:number, y:number };
 
-declare interface Text {
-    x:number;
-    y:number;
+declare interface KeyHandler {
+
+    readonly code:number;
+    readonly isDown:boolean;
+    readonly isUp:boolean;
+    press:() => void;
+    release:() => void;
 }
 
-declare interface Rectangle {
+declare interface DisplayableObject {
+    x:number;
+    y:number;
+     
+    //Velocity.
+    vx:number;
+    vy:number;
+    
+    pivotX:number;
+    pivotY:number;
+    
+    width:number;
+    height:number;
+    
+    visible:boolean;
+    interactive:boolean;
+
+    alphs:number;
+
+    readonly gx:number;
+    readonly gY:number;
+    readonly halfWdth:number;
+    readonly halfHeight:number;
+    readonly position:Coordinate;
+    readonly centerX:number;
+    readonly centerY:number;
+
+
+    setPosition( x:number, y:number):void;
+
+    putCenter(o:DisplayableObject, xOffset?:number, yOffset?:number):void;
+
+    putTop(o:DisplayableObject, xOffset?:number, yOffset?:number):void;
+
+    putRight(o:DisplayableObject, xOffset?:number, yOffset?:number):void;
+
+    putBottom(o:DisplayableObject, xOffset?:number, yOffset?:number):void;
+
+    putLeft(o:DisplayableObject, xOffset?:number, yOffset?:number):void;
+    
+}
+
+declare interface Group extends DisplayableObject {
+
+    addChild(sprite:DisplayableObject):void;
+
+    add(...sprites: DisplayableObject[]):void;
+}
+
+declare interface Sound {
+
+}
+
+declare interface Sprite extends DisplayableObject {
+}
+
+declare interface Line extends DisplayableObject {
+}
+
+declare interface Text extends DisplayableObject {
+    content:string;
+}
+
+declare interface Rectangle extends DisplayableObject {
   
     /**
      * sprite to set the point around which the sprite should rotate.
@@ -14,20 +82,49 @@ declare interface Rectangle {
      * 
      */
     rotate:number;
-  
-    pivotX:number;
-    pivotY:number;
 }
 
-declare interface Circle {
+declare interface Circle extends DisplayableObject {
+
+}
+
+declare interface Stage extends DisplayableObject {
 
 }
 
 declare interface ga {
 
-    new( height:number, width:number, state:Function, assets?:Array<string> ):ga;
+    /**
+     * 
+     */
+    new( heightPx:number, widthPx:number, initialState:Function, assets?:Array<string> ):ga;
 
+    /**
+     * 
+     */
     canvas:HTMLCanvasElement;
+
+    /**
+     *  Custom key handler
+     */
+    keyboard( keyCode:number):KeyHandler;
+
+    /**
+     *  Default key handlers
+     */
+    key: {
+        leftArrow:KeyHandler;
+        upArrow:KeyHandler;
+        rightArrow:KeyHandler;
+        downArrow :KeyHandler;
+        space:KeyHandler;
+    };
+    
+    scale:number;
+    /**
+     * 
+     */
+    stage:Stage;
 
     /**
      * The frame rate will default to 60 fps is you don't set it
@@ -45,6 +142,11 @@ declare interface ga {
     hidePointer():void;
 
     /**
+     * 
+     */
+    showPointer():void;
+
+    /**
      * set the game state
      */
     state:Function;
@@ -57,13 +159,30 @@ declare interface ga {
     /**
      * 
      */
-    rectangle( width:number, height:number, fillColor:string, strokeColor:string, lineWidth:number, x:number, y:number ):Rectangle;
+    pause():void;
+
+    /**
+     * 
+     */
+    resume():void;
+
+
+    /**
+     * 
+     */
+    rectangle( widthPx:number, heightPx:number, fillColor:string, strokeColor?:string, lineWidth?:number, x?:number, y?:number ):Rectangle;
     
     /**
      * 
      */
-    circle( diameter:number, fillstyle:string, stroketyle:string, lineWidth:number, x:number, y:number ):Circle;
+    circle( diameter:number, fillstyle:string, stroketyle?:string, lineWidth?:number, x?:number, y?:number ):Circle;
 
+    /**
+     * `line` creates and returns a line with a start and end points.
+     * arguments: lineColor, lineWidth, startX, startY, endX, endY.
+     * 
+     */
+    line(strokeStyle?:string, lineWidth?:number, x?:number, y?:number, endX?:number, endY?:number):Line;
 
     /**
      * 
@@ -71,6 +190,15 @@ declare interface ga {
      */
     text(content:string, font:string, fillstype:string, x?:number, y?:number):Text;
 
+    /**
+     * 
+     */
+    sound(asset:string):Sound;
+
+    /**
+     * 
+     */
+    group(...sprites: DisplayableObject[]):Group;
 }
 
 
