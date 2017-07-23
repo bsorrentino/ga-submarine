@@ -29,7 +29,7 @@ declare interface DisplayableObject {
     visible:boolean;
     interactive:boolean;
 
-    alphs:number;
+    alpha:number;
 
     readonly gx:number;
     readonly gY:number;
@@ -52,7 +52,13 @@ declare interface DisplayableObject {
     putBottom(o:DisplayableObject, xOffset?:number, yOffset?:number):void;
 
     putLeft(o:DisplayableObject, xOffset?:number, yOffset?:number):void;
-    
+
+    addChild(sprite:DisplayableObject):void;
+    removeChild(sprite:DisplayableObject):void;
+
+    add(...sprites: DisplayableObject[]):void;
+    remove(...sprites: DisplayableObject[]):void;
+
     // Allow extension
     [key: string]: any
 
@@ -60,9 +66,6 @@ declare interface DisplayableObject {
 
 declare interface Group extends DisplayableObject {
 
-    addChild(sprite:DisplayableObject):void;
-
-    add(...sprites: DisplayableObject[]):void;
 }
 
 declare interface Sprite extends DisplayableObject {

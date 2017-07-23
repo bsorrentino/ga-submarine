@@ -4,6 +4,10 @@ type Collision = "left" | "top" | "right" | "left";
 
 type EasingType = "smoothstep" ;
 
+declare interface Path {
+
+}
+
 declare interface Sound  {
 
     /**
@@ -92,6 +96,19 @@ declare interface ga {
     loop:boolean,                               //Should the animation loop?
     yoyo:boolean,                       //Should the direction reverse?
     delayBeforeContinue:number         //Delay, in milliseconds, between sections
-  ):any;
+  ):Path;
 
+  /**
+   * 
+   */
+  walkPath(
+    sprite:DisplayableObject,                   //The sprite
+    originalPathArray:Array<[number]>,        //A 2D array of waypoints
+    totalFrames:number,              //The duration, in frames
+    type:EasingType,                       //The easing type
+    loop:boolean,                               //Should the animation loop?
+    yoyo:boolean,                       //Should the direction reverse?
+    delayBeforeContinue:number         //Delay, in milliseconds, between sections
+  ):Path;
+    
 }
