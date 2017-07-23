@@ -1,6 +1,8 @@
 
 type Coordinate = { x:number, y:number };
 
+type Bounds = { x:number, y:number, width:number, heignt:number };
+
 declare interface KeyHandler {
 
     readonly code:number;
@@ -36,7 +38,8 @@ declare interface DisplayableObject {
     readonly position:Coordinate;
     readonly centerX:number;
     readonly centerY:number;
-
+    readonly localBounds:Bounds;
+    readonly globalBounds:Bounds;
 
     setPosition( x:number, y:number):void;
 
@@ -50,6 +53,9 @@ declare interface DisplayableObject {
 
     putLeft(o:DisplayableObject, xOffset?:number, yOffset?:number):void;
     
+    // Allow extension
+    [key: string]: any
+
 }
 
 declare interface Group extends DisplayableObject {
@@ -59,11 +65,11 @@ declare interface Group extends DisplayableObject {
     add(...sprites: DisplayableObject[]):void;
 }
 
-declare interface Sound {
-
-}
-
 declare interface Sprite extends DisplayableObject {
+    loop:boolean;
+
+    play():void;
+    stop():void;
 }
 
 declare interface Line extends DisplayableObject {
@@ -189,11 +195,6 @@ declare interface ga {
      * The font family name will be the same as the font's file name
      */
     text(content:string, font:string, fillstype:string, x?:number, y?:number):Text;
-
-    /**
-     * 
-     */
-    sound(asset:string):Sound;
 
     /**
      * 

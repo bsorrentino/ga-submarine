@@ -1,5 +1,34 @@
 /// <reference path="ga.d.ts" />
 
+type Collision = "left" | "top" | "right" | "left";
+
+type EasingType = "smoothstep" ;
+
+declare interface Sound  {
+
+    /**
+     * 
+     */
+    volume:number;
+
+    /**
+     * 
+     */
+    loop:boolean;
+
+    /**
+     * You can set the sound object's pan by assigning a value between -1 (left speaker) to 1 (right speaker). 
+     * A pan value of 0 makes the sound equal volume in both speakers.
+     */
+    pan:number;
+
+    /**
+     * 
+     */
+    play():void;
+
+}
+
 
 declare interface ga {
 
@@ -30,4 +59,39 @@ declare interface ga {
    * velocity to its position
    */
   move( sprites:DisplayableObject|Array<DisplayableObject> ):void;
+
+
+  /**
+   * 
+   */
+  contain(s:DisplayableObject, bounds:Bounds, bounce?:boolean, extra?:(collision:Collision)=> void ):Collision|undefined;
+
+  /*
+  Use it to find out if two rectangular sprites are touching.
+  Parameters:
+  a. A sprite object with `centerX`, `centerY`, `halfWidth` and `halfHeight` properties.
+  b. A sprite object with `centerX`, `centerY`, `halfWidth` and `halfHeight` properties.
+
+  */
+  hitTestRectangle(r1:DisplayableObject, r2:DisplayableObject, global?:boolean ):boolean;
+ 
+  /**
+   * 
+   */
+  sound(asset:string):Sound;
+
+
+  /**
+   * 
+   */
+  walkCurve(
+    sprite:DisplayableObject,           //The sprite
+    pathArray:Array<[[number]]>,        //2D array of Bezier curves
+    totalFrames:number,                //The duration, in frames
+    type:EasingType,                       //The easing type
+    loop:boolean,                               //Should the animation loop?
+    yoyo:boolean,                       //Should the direction reverse?
+    delayBeforeContinue:number         //Delay, in milliseconds, between sections
+  ):any;
+
 }
