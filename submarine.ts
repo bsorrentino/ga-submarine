@@ -5,11 +5,12 @@ let g = new ga( 80*SZ, 60*SZ, setup);
 
 g.start();
 
+const CRUISE_VELOCITY = 2;
 
 var cruise:GA.Rectangle,
-    velocity = 2,
-    bombs:Array<GA.Circle>,
-    sea:GA.Group,
+    submarines:Array<GA.DisplayableObject>,
+    bombs:Array<GA.DisplayableObject>,
+    sea:GA.DisplayableObject,
     end
 ;
 
@@ -25,47 +26,77 @@ function setup() {
 
   let deepY = 9*SZ;
 
-  let deep = g.rectangle( g.canvas.width,  g.canvas.height - deepY, "cyan" );
-  deep.setPosition( 0, deepY );
-
-  let horizon = g.line( "blue", 1, 0, deep.y+1, deep.width, deep.y+1);
-
-  sea = g.group( deep, horizon );
+  let sea = g.rectangle( g.canvas.width,  g.canvas.height - deepY, "cyan" );
+  sea.setPosition( 0, deepY );
   sea.interactive = false;
 
-  cruise = g.rectangle(11*SZ, 3*SZ, "black" );
-  
-  g.stage.putCenter( cruise ); cruise.y = 6*SZ;
+  let horizon = g.line( "blue", 1, 0, sea.y+1, sea.width, sea.y+1);
 
-  let scene = g.group();
+  //let scene = g.group();
 
   g.key.leftArrow.press = () => {
-      cruise.vx = -velocity ;
+      cruise.vx = -CRUISE_VELOCITY ;
   }
   g.key.leftArrow.release = () => {
     cruise.vx = 0 ;
   }
   g.key.rightArrow.press = () => {
-      cruise.vx = velocity ;
+      cruise.vx = CRUISE_VELOCITY ;
   }
   g.key.rightArrow.release = () => {
     cruise.vx = 0 ;    
   }
   g.key.upArrow.press = () => {
-       bombs.filter( (b) => b.isRight ).forEach(b => {
-         b.fire();
-       });
+       let b = bombs.filter( (b) => b.isRight && !b.visible )[0];
+       if( b ) b.fire();
   }
   g.key.downArrow.press = () => {
-       bombs.filter( (b) => b.isLeft ).forEach(b => {
-         b.fire();
-       });
+       let b = bombs.filter( (b) => b.isLeft && !b.visible )[0];
+       if( b ) b.fire();
   }
 
-  let b1 = g.circle( 10, "red"); b1.isLeft = true;
-  let b2 = g.circle( 10, "black"); b2.isRight = true;
+  ///
+  /// CRUISE
+  /// 
+  cruise = g.rectangle(11*SZ, 3*SZ, "black" );
+  
+  g.stage.putCenter( cruise ); cruise.y = 6*SZ;
 
-  bombs = new Array<GA.Circle>(  b1, b2 );
+  //
+  // SUBMARINES
+  // 
+
+  const SUB_NUMBER = 2;
+
+  submarines = new Array<GA.DisplayableObject>( SUB_NUMBER );
+  for( var ii = 0; ii < SUB_NUMBER ; ++ii ) {
+
+    let sub = g.rectangle(11*SZ, 3*SZ, "black" );
+    sub.vx = 1;
+    sub.visible = true;
+    g.stage.putLeft(sub);
+    sub.y = g.randomInt( sea.y, sea.height + sea.y);
+
+    sub.play = ( cycle:number ) => {
+      if( cycle%3===0 ) g.move(sub);
+    }
+
+    submarines.push(  sub  );
+  }
+
+
+  //
+  // BOMBS
+  // 
+
+  //let b1 = g.circle( 10, "red"); b1.isLeft = true;
+  //let b2 = g.circle( 10, "black"); b2.isRight = true;
+  let b1 = g.rectangle( 10, 10,  "red"); b1.isLeft = true;
+  let b2 = g.circle( 10,  "red"); b2.isLeft = true;
+  let b3 = g.rectangle( 10, 10, "black"); b3.isRight = true;
+  let b4 = g.circle( 10, "black"); b4.isRight = true;
+
+  bombs = new Array<GA.DisplayableObject>(  b1, b2, b3, b4 );
 
   bombs.forEach( (bomb) => {
     bomb.visible = false;
@@ -114,14 +145,12 @@ function setup() {
 
     }
 
-    bomb.play = () => {
+    bomb.play = (cycle:number) => {
       let pos =  (bomb.isLeft) ? "left" : "right";
       let wasInTheSea = bomb.isInTheSea;
-      bomb.isInTheSea = g.hitTestCircleRectangle( bomb, sea.children[0] );
-
-      
+      bomb.isInTheSea = g.hitTestRectangle( bomb, sea );
       if( bomb.isInTheSea ) {
-        console.log( "bomb ", pos ," in the sea", bomb.isInTheSea );
+        //console.log( "bomb ", pos ," in the sea", bomb.isInTheSea );
         bomb.vy = 1
         g.move(bomb);
       }
@@ -140,13 +169,18 @@ function setup() {
   
 }
 
+let cycle = 0;
 //The `play` function will run in a loop
 function play() {
 
+    ++cycle;
+
     let mvBounds = g.stage.localBounds;
 
-    bombs.forEach( (b) => b.play() );
+    bombs.forEach( (b) => b.play(cycle) );
    
+    submarines.forEach( (s) => s.play(cycle) );
+
     let collision = g.contain(cruise, mvBounds);
     
     if( !collision )

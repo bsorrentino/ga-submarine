@@ -93,7 +93,7 @@ export interface Engine {
   b. A sprite object with `centerX`, `centerY`, `halfWidth` and `halfHeight` properties.
 
   */
-  hitTestRectangle(r1:DisplayableObject, r2:DisplayableObject, global?:boolean ):Hitting;
+  hitTestRectangle(r1:DisplayableObject, r2:DisplayableObject, global?:boolean ):boolean;
   /*
 
   Use it to find out if a point is touching a circular or rectangular sprite.
@@ -103,7 +103,7 @@ export interface Engine {
   If the sprite has a `radius` property, the function will interpret
   the shape as a circle.
   */
-  hitTestPoint(point:Coordinate, sprite:DisplayableObject):Hitting;
+  hitTestPoint(point:Coordinate, sprite:DisplayableObject):boolean;
   /*
 
   Use it to find out if two circular sprites are touching.
@@ -112,7 +112,7 @@ export interface Engine {
   b. A sprite object with `centerX`, `centerY` and `radius`.
   */
 
-  hitTestCircle(c1:Circle, c2:Circle, global?:boolean):Hitting;
+  hitTestCircle(c1:Circle, c2:Circle, global?:boolean):boolean;
   /*
 
   Use it to find out if a circular shape is touching a rectangular shape
@@ -121,7 +121,7 @@ export interface Engine {
   b. A sprite object with `centerX`, `centerY`, `halfWidth` and `halfHeight` properties.
 
   */
-  hitTestCircleRectangle(c1:Circle, r1:Rectangle, global?:boolean):Hitting;
+  hitTestCircleRectangle(c1:Circle, r1:Rectangle, global?:boolean):Hitting|boolean;
   /*
 
   Use it to find out if a circular shape is touching a point
@@ -130,7 +130,7 @@ export interface Engine {
   b. A point object with `x` and `y` properties.
 
   */
-  hitTestCirclePoint(c1:Circle, point:Coordinate,  global?:boolean):Hitting;
+  hitTestCirclePoint(c1:Circle, point:Coordinate,  global?:boolean):boolean;
   
   /*
   Use it to find out if two rectangular sprites are touching.
@@ -138,7 +138,7 @@ export interface Engine {
   a. A sprite object with `centerX`, `centerY`, `halfWidth` and `halfHeight` properties.
   b. A sprite object with `centerX`, `centerY`, `halfWidth` and `halfHeight` properties.
   */
-  hitTestRectangle(r1:Rectangle, r2:Rectangle, global?:boolean):Hitting;
+  hitTestRectangle(r1:Rectangle, r2:Rectangle, global?:boolean):boolean;
 
   /*
 

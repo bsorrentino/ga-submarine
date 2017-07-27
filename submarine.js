@@ -2,7 +2,8 @@
 var SZ = 8;
 var g = new ga(80 * SZ, 60 * SZ, setup);
 g.start();
-var cruise, velocity = 2, bombs, sea, end;
+var CRUISE_VELOCITY = 2;
+var cruise, submarines, bombs, sea, end;
 /**
     `setup` function that will run only once.
     Use it for initialization tasks
@@ -12,42 +13,73 @@ function setup() {
     g.backgroundColor = "white";
     g.canvas.style.border = "1px black dashed";
     var deepY = 9 * SZ;
-    var deep = g.rectangle(g.canvas.width, g.canvas.height - deepY, "cyan");
-    deep.setPosition(0, deepY);
-    var horizon = g.line("blue", 1, 0, deep.y + 1, deep.width, deep.y + 1);
-    sea = g.group(deep, horizon);
+    var sea = g.rectangle(g.canvas.width, g.canvas.height - deepY, "cyan");
+    sea.setPosition(0, deepY);
     sea.interactive = false;
-    cruise = g.rectangle(11 * SZ, 3 * SZ, "black");
-    g.stage.putCenter(cruise);
-    cruise.y = 6 * SZ;
-    var scene = g.group();
+    var horizon = g.line("blue", 1, 0, sea.y + 1, sea.width, sea.y + 1);
+    //let scene = g.group();
     g.key.leftArrow.press = function () {
-        cruise.vx = -velocity;
+        cruise.vx = -CRUISE_VELOCITY;
     };
     g.key.leftArrow.release = function () {
         cruise.vx = 0;
     };
     g.key.rightArrow.press = function () {
-        cruise.vx = velocity;
+        cruise.vx = CRUISE_VELOCITY;
     };
     g.key.rightArrow.release = function () {
         cruise.vx = 0;
     };
     g.key.upArrow.press = function () {
-        bombs.filter(function (b) { return b.isRight; }).forEach(function (b) {
+        var b = bombs.filter(function (b) { return b.isRight && !b.visible; })[0];
+        if (b)
             b.fire();
-        });
     };
     g.key.downArrow.press = function () {
-        bombs.filter(function (b) { return b.isLeft; }).forEach(function (b) {
+        var b = bombs.filter(function (b) { return b.isLeft && !b.visible; })[0];
+        if (b)
             b.fire();
-        });
     };
-    var b1 = g.circle(10, "red");
+    ///
+    /// CRUISE
+    /// 
+    cruise = g.rectangle(11 * SZ, 3 * SZ, "black");
+    g.stage.putCenter(cruise);
+    cruise.y = 6 * SZ;
+    //
+    // SUBMARINES
+    // 
+    var SUB_NUMBER = 2;
+    submarines = new Array(SUB_NUMBER);
+    var _loop_1 = function () {
+        var sub = g.rectangle(11 * SZ, 3 * SZ, "black");
+        sub.vx = 1;
+        sub.visible = true;
+        g.stage.putLeft(sub);
+        sub.y = g.randomInt(sea.y, sea.height + sea.y);
+        sub.play = function (cycle) {
+            if (cycle % 3 === 0)
+                g.move(sub);
+        };
+        submarines.push(sub);
+    };
+    for (var ii = 0; ii < SUB_NUMBER; ++ii) {
+        _loop_1();
+    }
+    //
+    // BOMBS
+    // 
+    //let b1 = g.circle( 10, "red"); b1.isLeft = true;
+    //let b2 = g.circle( 10, "black"); b2.isRight = true;
+    var b1 = g.rectangle(10, 10, "red");
     b1.isLeft = true;
-    var b2 = g.circle(10, "black");
-    b2.isRight = true;
-    bombs = new Array(b1, b2);
+    var b2 = g.circle(10, "red");
+    b2.isLeft = true;
+    var b3 = g.rectangle(10, 10, "black");
+    b3.isRight = true;
+    var b4 = g.circle(10, "black");
+    b4.isRight = true;
+    bombs = new Array(b1, b2, b3, b4);
     bombs.forEach(function (bomb) {
         bomb.visible = false;
         bomb.fire = function () {
@@ -90,9 +122,9 @@ function setup() {
         bomb.play = function () {
             var pos = (bomb.isLeft) ? "left" : "right";
             var wasInTheSea = bomb.isInTheSea;
-            bomb.isInTheSea = g.hitTestCircleRectangle(bomb, sea.children[0]);
+            bomb.isInTheSea = g.hitTestRectangle(bomb, sea);
             if (bomb.isInTheSea) {
-                console.log("bomb ", pos, " in the sea", bomb.isInTheSea);
+                //console.log( "bomb ", pos ," in the sea", bomb.isInTheSea );
                 bomb.vy = 1;
                 g.move(bomb);
             }
@@ -105,10 +137,13 @@ function setup() {
     //Change the state to `play`
     g.state = play;
 }
+var cycle = 0;
 //The `play` function will run in a loop
 function play() {
+    ++cycle;
     var mvBounds = g.stage.localBounds;
     bombs.forEach(function (b) { return b.play(); });
+    submarines.forEach(function (s) { return s.play(cycle); });
     var collision = g.contain(cruise, mvBounds);
     if (!collision)
         g.move(cruise);
