@@ -6,10 +6,10 @@ let g = new ga( 80*SZ, 60*SZ, setup);
 g.start();
 
 
-var cruise:Rectangle,
+var cruise:GA.Rectangle,
     velocity = 2,
-    right_bomb:Circle,
-    left_bomb:Circle,
+    bombs:Array<GA.Circle>,
+    sea:GA.Group,
     end
 ;
 
@@ -30,7 +30,7 @@ function setup() {
 
   let horizon = g.line( "blue", 1, 0, deep.y+1, deep.width, deep.y+1);
 
-  let sea = g.group( deep, horizon );
+  sea = g.group( deep, horizon );
   sea.interactive = false;
 
   cruise = g.rectangle(11*SZ, 3*SZ, "black" );
@@ -38,7 +38,6 @@ function setup() {
   g.stage.putCenter( cruise ); cruise.y = 6*SZ;
 
   let scene = g.group();
-
 
   g.key.leftArrow.press = () => {
       cruise.vx = -velocity ;
@@ -53,69 +52,88 @@ function setup() {
     cruise.vx = 0 ;    
   }
   g.key.upArrow.press = () => {
-       left_bomb.fire();
+       bombs.filter( (b) => b.isRight ).forEach(b => {
+         b.fire();
+       });
   }
   g.key.downArrow.press = () => {
-       right_bomb.fire();
+       bombs.filter( (b) => b.isLeft ).forEach(b => {
+         b.fire();
+       });
   }
 
+  let b1 = g.circle( 10, "red"); b1.isLeft = true;
+  let b2 = g.circle( 10, "black"); b2.isRight = true;
 
-  left_bomb = g.circle( 10, "red");
-  
-  left_bomb.fire = () => {
+  bombs = new Array<GA.Circle>(  b1, b2 );
 
-    cruise.putLeft(left_bomb);
+  bombs.forEach( (bomb) => {
+    bomb.visible = false;
 
-    let x = left_bomb.x, y = left_bomb.y;
+    bomb.fire = () => {
+      if( bomb.visible ) return;
 
-    let path_left_bomb = g.walkCurve(
-      left_bomb,    
-      [
-        [
-          [x,y],
-          [x - 5.22*10, y - 7.22*10],
-          [x - 7.87*10, y - 3.54*10],
-          [x - 8.00*10, y + cruise.height]
-        ]    
-      ],
-      100,                   //Total duration, in frames
-      "smoothstep",          //Easing type
-      false,                  //Should the path loop?
-      false,                  //Should the path yoyo?
-      1000                   //Delay in milliseconds between segments
-    );
+      bomb.visible = true;
 
-  }
-  
-  right_bomb = g.circle( 10, "red");
-  
-  
-  right_bomb.fire = () => {
+      var points:[[number]];
 
-    cruise.putRight(right_bomb);
-
-      let path_right_bomb = g.walkCurve(
-        right_bomb,              //The sprite
-
-        //An array of Bezier curve points that 
-        //you want to connect in sequence
-        [
+      if( bomb.isLeft ) {
+        cruise.putLeft(bomb);   
+        let x = bomb.x, y = bomb.y;
+        points =
           [
-            [right_bomb.x, right_bomb.y],
-            [right_bomb.x + 5.22*10, right_bomb.y - 7.22*10],
-            [right_bomb.x + 7.87*10, right_bomb.y - 3.54*10],
-            [right_bomb.x + 8.00*10, right_bomb.y + cruise.height]
-          ]    
-        ],
+            [x,y],
+            [x - 5.22*10, y - 7.22*10],
+            [x - 7.87*10, y - 3.54*10],
+            [x - 8.00*10, y + cruise.height]
+          ];       
+      }
+      else {
+        cruise.putRight(bomb);
+        let x = bomb.x, y = bomb.y;
+        points = 
+            [
+              [x, y],
+              [x + 5.22*10, y - 7.22*10],
+              [x + 7.87*10, y - 3.54*10],
+              [x + 8.00*10, y + cruise.height]
+            ];    
+          
+      }
+      let path = g.walkCurve(
+          bomb, //The sprite
+          //An array of Bezier curve points that 
+          //you want to connect in sequence
+          [ points ],
+          100,                   //Total duration, in frames
+          "smoothstep",          //Easing type
+          false,                  //Should the path loop?
+          false,                  //Should the path yoyo?
+          1000                   //Delay in milliseconds between segments
+        );
 
-        100,                   //Total duration, in frames
-        "smoothstep",          //Easing type
-        false,                  //Should the path loop?
-        false,                  //Should the path yoyo?
-        1000                   //Delay in milliseconds between segments
-      );
+    }
 
-  }
+    bomb.play = () => {
+      let pos =  (bomb.isLeft) ? "left" : "right";
+      let wasInTheSea = bomb.isInTheSea;
+      bomb.isInTheSea = g.hitTestCircleRectangle( bomb, sea.children[0] );
+
+      
+      if( bomb.isInTheSea ) {
+        console.log( "bomb ", pos ," in the sea", bomb.isInTheSea );
+        bomb.vy = 1
+        g.move(bomb);
+      }
+      else if( wasInTheSea ) {
+        console.log( "bomb ", pos ," out of sea", bomb.isInTheSea );
+        bomb.visible = false;
+
+      }
+      
+    }
+  });
+  
     //Change the state to `play`
   g.state = play;
   
@@ -125,8 +143,9 @@ function setup() {
 //The `play` function will run in a loop
 function play() {
 
-
     let mvBounds = g.stage.localBounds;
+
+    bombs.forEach( (b) => b.play() );
    
     let collision = g.contain(cruise, mvBounds);
     
@@ -136,3 +155,4 @@ function play() {
       console.log( "collision", collision );
 
 }
+

@@ -1,9 +1,11 @@
 
-type Coordinate = { x:number, y:number };
+declare namespace GA {
 
-type Bounds = { x:number, y:number, width:number, heignt:number };
+export type Coordinate = { x:number, y:number };
 
-declare interface KeyHandler {
+export type Bounds = { x:number, y:number, width:number, heignt:number };
+
+export interface KeyHandler {
 
     readonly code:number;
     readonly isDown:boolean;
@@ -12,7 +14,7 @@ declare interface KeyHandler {
     release:() => void;
 }
 
-declare interface DisplayableObject {
+export interface DisplayableObject {
     x:number;
     y:number;
      
@@ -28,7 +30,7 @@ declare interface DisplayableObject {
     
     visible:boolean;
     interactive:boolean;
-
+    rotation:number;
     alpha:number;
 
     readonly gx:number;
@@ -53,6 +55,15 @@ declare interface DisplayableObject {
 
     putLeft(o:DisplayableObject, xOffset?:number, yOffset?:number):void;
 
+    /**
+     * figures out if the pointer is touching a sprite.
+     */
+    hitTestSprite(sprite:DisplayableObject):boolean;
+
+    // Children
+
+    children:DisplayableObject[];
+    
     addChild(sprite:DisplayableObject):void;
     removeChild(sprite:DisplayableObject):void;
 
@@ -64,25 +75,25 @@ declare interface DisplayableObject {
 
 }
 
-declare interface Group extends DisplayableObject {
+export interface Group extends DisplayableObject {
 
 }
 
-declare interface Sprite extends DisplayableObject {
+export interface Sprite extends DisplayableObject {
     loop:boolean;
 
     play():void;
     stop():void;
 }
 
-declare interface Line extends DisplayableObject {
+export interface Line extends DisplayableObject {
 }
 
-declare interface Text extends DisplayableObject {
+export interface Text extends DisplayableObject {
     content:string;
 }
 
-declare interface Rectangle extends DisplayableObject {
+export interface Rectangle extends DisplayableObject {
   
     /**
      * sprite to set the point around which the sprite should rotate.
@@ -90,23 +101,24 @@ declare interface Rectangle extends DisplayableObject {
      * 0.01 and 0.99 to shift the center of rotation.
      * 
      */
-    rotate:number;
+    //rotate:number;
 }
 
-declare interface Circle extends DisplayableObject {
+export interface Circle extends DisplayableObject {
+    diameter:number;
+    radius:number;
+}
+
+export interface Stage extends DisplayableObject {
 
 }
 
-declare interface Stage extends DisplayableObject {
-
-}
-
-declare interface ga {
+export interface Engine {
 
     /**
      * 
      */
-    new( heightPx:number, widthPx:number, initialState:Function, assets?:Array<string> ):ga;
+    new( heightPx:number, widthPx:number, initialState:Function, assets?:Array<string> ):Engine;
 
     /**
      * 
@@ -205,5 +217,6 @@ declare interface ga {
     group(...sprites: DisplayableObject[]):Group;
 }
 
+} // end namespace GA
 
-declare var ga:ga;
+declare var ga:GA.Engine;
