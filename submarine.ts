@@ -198,7 +198,8 @@ function setup() {
     }
 
     bomb.play = (cycle:number) => {
-
+      if( cycle%2!==0) return;
+       
       let pos =  (bomb.isLeft) ? "left" : "right";
       
       let wasInTheSea = bomb.isInTheSea;
@@ -207,6 +208,7 @@ function setup() {
       if( bomb.isInTheSea ) {
         //console.log( "bomb ", pos ," in the sea", bomb.isInTheSea );
         bomb.vy = 1
+
         g.move(bomb);
 
         submarines

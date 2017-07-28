@@ -55,7 +55,7 @@ function setup() {
             g.wait(g.randomInt(750, 1500), function () { return sub.visible = true; });
         };
         sub.play = function (cycle) {
-            if (cycle % 1 === 0)
+            if (cycle % 3 === 0)
                 g.move(sub);
         };
         sub.strike = function () {
@@ -109,6 +109,8 @@ function setup() {
             bomb.isInTheSea = false;
         };
         bomb.play = function (cycle) {
+            if (cycle % 2 !== 0)
+                return;
             var pos = (bomb.isLeft) ? "left" : "right";
             var wasInTheSea = bomb.isInTheSea;
             bomb.isInTheSea = g.hitTestRectangle(bomb, sea);
