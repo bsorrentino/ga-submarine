@@ -62,6 +62,13 @@ function setup() {
   
   g.stage.putCenter( cruise ); cruise.y = 6*SZ;
 
+  cruise.play = (cycle:number) => {
+    let collision = g.contain(cruise, g.stage.localBounds);
+    
+    if( !collision ) g.move( cruise );
+
+  }
+
   //
   // SUBMARINES
   // 
@@ -78,7 +85,13 @@ function setup() {
     sub.y = g.randomInt( sea.y, sea.height + sea.y);
 
     sub.play = ( cycle:number ) => {
+
       if( cycle%3===0 ) g.move(sub);
+    }
+    sub.strike = () => {
+
+      sub.visible = false;
+      sub.y = g.randomInt( sea.y, sea.height + sea.y);
     }
 
     submarines.push(  sub  );
@@ -146,6 +159,7 @@ function setup() {
     }
 
     bomb.play = (cycle:number) => {
+
       let pos =  (bomb.isLeft) ? "left" : "right";
       let wasInTheSea = bomb.isInTheSea;
       bomb.isInTheSea = g.hitTestRectangle( bomb, sea );
@@ -153,6 +167,17 @@ function setup() {
         //console.log( "bomb ", pos ," in the sea", bomb.isInTheSea );
         bomb.vy = 1
         g.move(bomb);
+
+        submarines
+          .filter( (sub) => sub.visible )
+          .forEach( (sub) => {
+            if( g.hitTestRectangle(bomb,sub) ) {
+              sub.strike();
+              bomb.visible = false;
+            }
+            
+          });
+
       }
       else if( wasInTheSea ) {
         console.log( "bomb ", pos ," out of sea", bomb.isInTheSea );
@@ -175,18 +200,12 @@ function play() {
 
     ++cycle;
 
-    let mvBounds = g.stage.localBounds;
-
     bombs.forEach( (b) => b.play(cycle) );
    
     submarines.forEach( (s) => s.play(cycle) );
 
-    let collision = g.contain(cruise, mvBounds);
-    
-    if( !collision )
-        g.move( cruise );
-    else
-      console.log( "collision", collision );
+    cruise.play( cycle );
+
 
 }
 

@@ -32,7 +32,8 @@ export interface DisplayableObject {
     interactive:boolean;
     rotation:number;
     alpha:number;
-
+    parent:DisplayableObject;
+    
     readonly gx:number;
     readonly gY:number;
     readonly halfWdth:number;

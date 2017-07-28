@@ -46,6 +46,11 @@ function setup() {
     cruise = g.rectangle(11 * SZ, 3 * SZ, "black");
     g.stage.putCenter(cruise);
     cruise.y = 6 * SZ;
+    cruise.play = function (cycle) {
+        var collision = g.contain(cruise, g.stage.localBounds);
+        if (!collision)
+            g.move(cruise);
+    };
     //
     // SUBMARINES
     // 
@@ -60,6 +65,10 @@ function setup() {
         sub.play = function (cycle) {
             if (cycle % 3 === 0)
                 g.move(sub);
+        };
+        sub.strike = function () {
+            sub.visible = false;
+            sub.y = g.randomInt(sea.y, sea.height + sea.y);
         };
         submarines.push(sub);
     };
@@ -119,7 +128,7 @@ function setup() {
             1000 //Delay in milliseconds between segments
             );
         };
-        bomb.play = function () {
+        bomb.play = function (cycle) {
             var pos = (bomb.isLeft) ? "left" : "right";
             var wasInTheSea = bomb.isInTheSea;
             bomb.isInTheSea = g.hitTestRectangle(bomb, sea);
@@ -127,6 +136,14 @@ function setup() {
                 //console.log( "bomb ", pos ," in the sea", bomb.isInTheSea );
                 bomb.vy = 1;
                 g.move(bomb);
+                submarines
+                    .filter(function (sub) { return sub.visible; })
+                    .forEach(function (sub) {
+                    if (g.hitTestRectangle(bomb, sub)) {
+                        sub.strike();
+                        bomb.visible = false;
+                    }
+                });
             }
             else if (wasInTheSea) {
                 console.log("bomb ", pos, " out of sea", bomb.isInTheSea);
@@ -141,12 +158,7 @@ var cycle = 0;
 //The `play` function will run in a loop
 function play() {
     ++cycle;
-    var mvBounds = g.stage.localBounds;
-    bombs.forEach(function (b) { return b.play(); });
+    bombs.forEach(function (b) { return b.play(cycle); });
     submarines.forEach(function (s) { return s.play(cycle); });
-    var collision = g.contain(cruise, mvBounds);
-    if (!collision)
-        g.move(cruise);
-    else
-        console.log("collision", collision);
+    cruise.play(cycle);
 }
