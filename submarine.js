@@ -4,10 +4,6 @@ var g = new ga(80 * SZ, 60 * SZ, setup);
 g.start();
 var CRUISE_VELOCITY = 2;
 var cruise, submarines, bombs, sea, end;
-/**
-    `setup` function that will run only once.
-    Use it for initialization tasks
-*/
 function setup() {
     console.log("setup", "canvas.w", g.canvas.width, "canvas.h", g.canvas.height);
     g.backgroundColor = "white";
@@ -17,7 +13,6 @@ function setup() {
     sea.setPosition(0, deepY);
     sea.interactive = false;
     var horizon = g.line("blue", 1, 0, sea.y + 1, sea.width, sea.y + 1);
-    //let scene = g.group();
     g.key.leftArrow.press = function () {
         cruise.vx = -CRUISE_VELOCITY;
     };
@@ -31,18 +26,15 @@ function setup() {
         cruise.vx = 0;
     };
     g.key.upArrow.press = function () {
-        var b = bombs.filter(function (b) { return b.isRight && !b.visible; })[0];
-        if (b)
-            b.fire();
+        var b = bombs.filter(function (b) { return b.isRight; }).filter(function (b) { return !b.visible; });
+        if (b[0])
+            b[0].fire();
     };
     g.key.downArrow.press = function () {
-        var b = bombs.filter(function (b) { return b.isLeft && !b.visible; })[0];
-        if (b)
-            b.fire();
+        var b = bombs.filter(function (b) { return b.isLeft; }).filter(function (b) { return !b.visible; });
+        if (b[0])
+            b[0].fire();
     };
-    ///
-    /// CRUISE
-    /// 
     cruise = g.rectangle(11 * SZ, 3 * SZ, "black");
     g.stage.putCenter(cruise);
     cruise.y = 6 * SZ;
@@ -51,35 +43,29 @@ function setup() {
         if (!collision)
             g.move(cruise);
     };
-    //
-    // SUBMARINES
-    // 
     var SUB_NUMBER = 2;
     submarines = new Array(SUB_NUMBER);
     var _loop_1 = function () {
         var sub = g.rectangle(11 * SZ, 3 * SZ, "black");
-        sub.vx = 1;
-        sub.visible = true;
-        g.stage.putLeft(sub);
-        sub.y = g.randomInt(sea.y, sea.height + sea.y);
+        sub.visible = false;
+        sub.start = function () {
+            sub.vx = 1;
+            g.stage.putLeft(sub);
+            sub.y = g.randomInt(sea.y, sea.height + sea.y);
+            g.wait(g.randomInt(750, 1500), function () { return sub.visible = true; });
+        };
         sub.play = function (cycle) {
-            if (cycle % 3 === 0)
+            if (cycle % 1 === 0)
                 g.move(sub);
         };
         sub.strike = function () {
             sub.visible = false;
-            sub.y = g.randomInt(sea.y, sea.height + sea.y);
         };
         submarines.push(sub);
     };
     for (var ii = 0; ii < SUB_NUMBER; ++ii) {
         _loop_1();
     }
-    //
-    // BOMBS
-    // 
-    //let b1 = g.circle( 10, "red"); b1.isLeft = true;
-    //let b2 = g.circle( 10, "black"); b2.isRight = true;
     var b1 = g.rectangle(10, 10, "red");
     b1.isLeft = true;
     var b2 = g.circle(10, "red");
@@ -92,8 +78,6 @@ function setup() {
     bombs.forEach(function (bomb) {
         bomb.visible = false;
         bomb.fire = function () {
-            if (bomb.visible)
-                return;
             bomb.visible = true;
             var points;
             if (bomb.isLeft) {
@@ -118,30 +102,25 @@ function setup() {
                         [x + 8.00 * 10, y + cruise.height]
                     ];
             }
-            var path = g.walkCurve(bomb, //The sprite
-            //An array of Bezier curve points that 
-            //you want to connect in sequence
-            [points], 100, //Total duration, in frames
-            "smoothstep", //Easing type
-            false, //Should the path loop?
-            false, //Should the path yoyo?
-            1000 //Delay in milliseconds between segments
-            );
+            var path = g.walkCurve(bomb, [points], 100, "smoothstep", false, false, 1000);
+        };
+        bomb.boom = function () {
+            bomb.visible = false;
+            bomb.isInTheSea = false;
         };
         bomb.play = function (cycle) {
             var pos = (bomb.isLeft) ? "left" : "right";
             var wasInTheSea = bomb.isInTheSea;
             bomb.isInTheSea = g.hitTestRectangle(bomb, sea);
             if (bomb.isInTheSea) {
-                //console.log( "bomb ", pos ," in the sea", bomb.isInTheSea );
                 bomb.vy = 1;
                 g.move(bomb);
                 submarines
                     .filter(function (sub) { return sub.visible; })
                     .forEach(function (sub) {
                     if (g.hitTestRectangle(bomb, sub)) {
+                        bomb.boom();
                         sub.strike();
-                        bomb.visible = false;
                     }
                 });
             }
@@ -151,14 +130,14 @@ function setup() {
             }
         };
     });
-    //Change the state to `play`
     g.state = play;
 }
 var cycle = 0;
-//The `play` function will run in a loop
 function play() {
     ++cycle;
-    bombs.forEach(function (b) { return b.play(cycle); });
-    submarines.forEach(function (s) { return s.play(cycle); });
+    if (cycle % 20 === 0)
+        submarines.filter(function (s) { return !s.visible; }).forEach(function (s) { return s.start(); });
+    bombs.filter(function (b) { return b.visible; }).forEach(function (b) { return b.play(cycle); });
+    submarines.filter(function (s) { return s.visible; }).forEach(function (s) { return s.play(cycle); });
     cruise.play(cycle);
 }

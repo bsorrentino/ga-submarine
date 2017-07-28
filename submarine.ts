@@ -1,4 +1,34 @@
 
+/**
+ * 
+ */
+interface Submarine extends GA.DisplayableObject {
+
+  play:(cycle:number)=>void;
+
+  start:()=>void;
+  strike:()=>void
+
+}
+
+interface Bomb extends GA.DisplayableObject {
+  isLeft:boolean;
+  isRight:boolean;
+  isInTheSea:boolean;
+
+  play:(cycle:number)=>void;
+  
+  boom:()=>void;
+  fire:()=>void;
+}
+
+interface Cruise extends GA.DisplayableObject {
+
+  play:(cycle:number)=>void;
+
+}
+
+
 const SZ = 8;
 
 let g = new ga( 80*SZ, 60*SZ, setup);
@@ -7,9 +37,9 @@ g.start();
 
 const CRUISE_VELOCITY = 2;
 
-var cruise:GA.Rectangle,
-    submarines:Array<GA.DisplayableObject>,
-    bombs:Array<GA.DisplayableObject>,
+var cruise:Cruise,
+    submarines:Array<Submarine>,
+    bombs:Array<Bomb>,
     sea:GA.DisplayableObject,
     end
 ;
@@ -47,18 +77,18 @@ function setup() {
     cruise.vx = 0 ;    
   }
   g.key.upArrow.press = () => {
-       let b = bombs.filter( (b) => b.isRight && !b.visible )[0];
-       if( b ) b.fire();
+       let b = bombs.filter( (b) => b.isRight ).filter( (b) => !b.visible );
+       if( b[0] ) b[0].fire();
   }
   g.key.downArrow.press = () => {
-       let b = bombs.filter( (b) => b.isLeft && !b.visible )[0];
-       if( b ) b.fire();
+       let b = bombs.filter( (b) => b.isLeft ).filter( (b) => !b.visible );
+       if( b[0] ) b[0].fire();
   }
 
   ///
   /// CRUISE
   /// 
-  cruise = g.rectangle(11*SZ, 3*SZ, "black" );
+  cruise = <any>g.rectangle(11*SZ, 3*SZ, "black" );
   
   g.stage.putCenter( cruise ); cruise.y = 6*SZ;
 
@@ -75,23 +105,28 @@ function setup() {
 
   const SUB_NUMBER = 2;
 
-  submarines = new Array<GA.DisplayableObject>( SUB_NUMBER );
+  submarines = new Array<Submarine>( SUB_NUMBER );
   for( var ii = 0; ii < SUB_NUMBER ; ++ii ) {
 
-    let sub = g.rectangle(11*SZ, 3*SZ, "black" );
-    sub.vx = 1;
-    sub.visible = true;
-    g.stage.putLeft(sub);
-    sub.y = g.randomInt( sea.y, sea.height + sea.y);
+    let sub = <Submarine>g.rectangle(11*SZ, 3*SZ, "black" );
+    sub.visible = false;
+
+    sub.start =  () => {
+      sub.vx = 1;
+      g.stage.putLeft(sub);
+      sub.y = g.randomInt( sea.y, sea.height + sea.y);
+
+      g.wait( g.randomInt( 750, 1500 ), () => sub.visible = true);
+    }
 
     sub.play = ( cycle:number ) => {
 
       if( cycle%3===0 ) g.move(sub);
     }
+
     sub.strike = () => {
 
       sub.visible = false;
-      sub.y = g.randomInt( sea.y, sea.height + sea.y);
     }
 
     submarines.push(  sub  );
@@ -104,18 +139,17 @@ function setup() {
 
   //let b1 = g.circle( 10, "red"); b1.isLeft = true;
   //let b2 = g.circle( 10, "black"); b2.isRight = true;
-  let b1 = g.rectangle( 10, 10,  "red"); b1.isLeft = true;
-  let b2 = g.circle( 10,  "red"); b2.isLeft = true;
-  let b3 = g.rectangle( 10, 10, "black"); b3.isRight = true;
-  let b4 = g.circle( 10, "black"); b4.isRight = true;
+  let b1:Bomb = <any>g.rectangle( 10, 10,  "red"); b1.isLeft = true;
+  let b2:Bomb = <any>g.circle( 10,  "red") as any; b2.isLeft = true;
+  let b3:Bomb = <any>g.rectangle( 10, 10, "black"); b3.isRight = true;
+  let b4:Bomb = <any>g.circle( 10, "black"); b4.isRight = true;
 
-  bombs = new Array<GA.DisplayableObject>(  b1, b2, b3, b4 );
+  bombs = new Array<Bomb>(  b1, b2, b3, b4 );
 
   bombs.forEach( (bomb) => {
     bomb.visible = false;
 
     bomb.fire = () => {
-      if( bomb.visible ) return;
 
       bomb.visible = true;
 
@@ -158,10 +192,17 @@ function setup() {
 
     }
 
+    bomb.boom = () => {
+      bomb.visible = false;
+      bomb.isInTheSea = false;
+    }
+
     bomb.play = (cycle:number) => {
 
       let pos =  (bomb.isLeft) ? "left" : "right";
+      
       let wasInTheSea = bomb.isInTheSea;
+
       bomb.isInTheSea = g.hitTestRectangle( bomb, sea );
       if( bomb.isInTheSea ) {
         //console.log( "bomb ", pos ," in the sea", bomb.isInTheSea );
@@ -172,8 +213,8 @@ function setup() {
           .filter( (sub) => sub.visible )
           .forEach( (sub) => {
             if( g.hitTestRectangle(bomb,sub) ) {
+              bomb.boom();
               sub.strike();
-              bomb.visible = false;
             }
             
           });
@@ -200,9 +241,11 @@ function play() {
 
     ++cycle;
 
-    bombs.forEach( (b) => b.play(cycle) );
+    if( cycle%20 === 0 ) submarines.filter( (s) => !s.visible ).forEach( (s) => s.start() );
+
+    bombs.filter( (b) => b.visible ).forEach( (b) => b.play(cycle) );
    
-    submarines.forEach( (s) => s.play(cycle) );
+    submarines.filter((s) => s.visible).forEach( (s) => s.play(cycle) );
 
     cruise.play( cycle );
 

@@ -79,6 +79,14 @@ export interface Engine {
    */
   move( sprites:DisplayableObject|Array<DisplayableObject> ):void;
 
+  /**
+   * Wait for a certain number of milliseconds and then execute a callback function.
+   * 
+   * @duration millseconds
+   * @callback
+   * @return handle (@see: clearTimeout)
+   */
+  wait(duration:number, callBack:(()=>void)):number;
 
   /**
    * 
