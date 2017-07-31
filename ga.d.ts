@@ -188,6 +188,11 @@ export interface Engine {
      */
     resume():void;
 
+    /**
+     * remove any sprite, or an argument list of sprites, from its parent.
+     * 
+     */
+    remove(spritesToRemove:DisplayableObject):void;
 
     /**
      * 
