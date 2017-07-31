@@ -3,7 +3,7 @@ var SZ = 8;
 var g = new ga(80 * SZ, 60 * SZ, setup);
 g.start();
 var CRUISE_VELOCITY = 2;
-var cruise, submarines, bombs, sea, end;
+var cruise, submarines, bombs, sea, scoreDisplay, end;
 function setup() {
     console.log("setup", "canvas.w", g.canvas.width, "canvas.h", g.canvas.height);
     g.backgroundColor = "white";
@@ -35,6 +35,26 @@ function setup() {
         if (b[0])
             b[0].fire();
     };
+    scoreDisplay = g.text("0", "20px emulogic", "black");
+    {
+        g.stage.putRight(scoreDisplay);
+        var x = scoreDisplay.x - scoreDisplay.width * 6;
+        g.stage.putTop(scoreDisplay);
+        scoreDisplay.x = x;
+        scoreDisplay.y += scoreDisplay.height + 5;
+        var label = g.text("SCORE: ", "20px emulogic", "pink");
+        scoreDisplay.putLeft(label);
+        label.x -= label.width;
+        scoreDisplay.currentScore = 0;
+        scoreDisplay.increment = function (score) {
+            scoreDisplay.currentScore += score || 1;
+            scoreDisplay.content = String(scoreDisplay.currentScore);
+        };
+        scoreDisplay.decrement = function (score) {
+            scoreDisplay.currentScore -= score || 1;
+            scoreDisplay.content = String(scoreDisplay.currentScore);
+        };
+    }
     cruise = g.rectangle(11 * SZ, 3 * SZ, "black");
     g.stage.putCenter(cruise);
     cruise.y = 6 * SZ;
@@ -43,15 +63,22 @@ function setup() {
         if (!collision)
             g.move(cruise);
     };
-    var SUB_NUMBER = 2;
+    var SUB_NUMBER = 4;
     submarines = new Array(SUB_NUMBER);
     var _loop_1 = function () {
         var sub = g.rectangle(11 * SZ, 3 * SZ, "black");
         sub.visible = false;
         sub.start = function () {
-            sub.vx = 1;
-            g.stage.putLeft(sub);
-            sub.y = g.randomInt(sea.y, sea.height + sea.y);
+            var rnd = g.randomInt(0, 100);
+            if (rnd % 2 === 0) {
+                sub.vx = -1;
+                g.stage.putRight(sub);
+            }
+            else {
+                sub.vx = 1;
+                g.stage.putLeft(sub);
+            }
+            sub.y = g.randomInt(sea.y, sea.height + sea.y) + sub.height;
             g.wait(g.randomInt(750, 1500), function () { return sub.visible = true; });
         };
         sub.play = function (cycle) {
@@ -60,6 +87,7 @@ function setup() {
         };
         sub.strike = function () {
             sub.visible = false;
+            scoreDisplay.increment();
         };
         submarines.push(sub);
     };

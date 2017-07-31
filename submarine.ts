@@ -28,6 +28,14 @@ interface Cruise extends GA.DisplayableObject {
 
 }
 
+interface ScoreDisplay extends GA.Text {
+
+  currentScore:number;
+
+  increment:( score?:number )=>void;
+  decrement:( score?:number )=>void;
+
+}
 
 const SZ = 8;
 
@@ -41,6 +49,7 @@ var cruise:Cruise,
     submarines:Array<Submarine>,
     bombs:Array<Bomb>,
     sea:GA.DisplayableObject,
+    scoreDisplay:ScoreDisplay,
     end
 ;
 
@@ -86,6 +95,31 @@ function setup() {
   }
 
   ///
+  /// SCORE
+  /// 
+  scoreDisplay = <any>g.text("0", "20px emulogic", "black");
+  {
+    g.stage.putRight(scoreDisplay); let x = scoreDisplay.x - scoreDisplay.width * 6;
+    g.stage.putTop(scoreDisplay); scoreDisplay.x = x; scoreDisplay.y += scoreDisplay.height + 5;
+
+    let label = g.text( "SCORE: ", "20px emulogic", "pink" );
+    scoreDisplay.putLeft( label ); label.x -= label.width;
+
+    scoreDisplay.currentScore = 0;
+
+    scoreDisplay.increment = (score?:number) => {
+      scoreDisplay.currentScore += score || 1;
+
+      scoreDisplay.content = String(scoreDisplay.currentScore);
+    }
+
+    scoreDisplay.decrement = (score?:number) => {
+      scoreDisplay.currentScore -= score || 1;
+      scoreDisplay.content = String(scoreDisplay.currentScore); 
+    }
+  }
+  
+  ///
   /// CRUISE
   /// 
   cruise = <any>g.rectangle(11*SZ, 3*SZ, "black" );
@@ -103,7 +137,7 @@ function setup() {
   // SUBMARINES
   // 
 
-  const SUB_NUMBER = 2;
+  const SUB_NUMBER = 4;
 
   submarines = new Array<Submarine>( SUB_NUMBER );
   for( var ii = 0; ii < SUB_NUMBER ; ++ii ) {
@@ -112,9 +146,16 @@ function setup() {
     sub.visible = false;
 
     sub.start =  () => {
-      sub.vx = 1;
-      g.stage.putLeft(sub);
-      sub.y = g.randomInt( sea.y, sea.height + sea.y);
+      let rnd = g.randomInt( 0, 100 );
+      if( rnd%2 === 0 ) {
+        sub.vx = -1    
+        g.stage.putRight(sub);
+      }
+      else {
+        sub.vx = 1;
+        g.stage.putLeft(sub);
+      }
+      sub.y = g.randomInt( sea.y, sea.height + sea.y) + sub.height;
 
       g.wait( g.randomInt( 750, 1500 ), () => sub.visible = true);
     }
@@ -127,6 +168,7 @@ function setup() {
     sub.strike = () => {
 
       sub.visible = false;
+      scoreDisplay.increment();
     }
 
     submarines.push(  sub  );
