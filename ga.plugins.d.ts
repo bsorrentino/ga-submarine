@@ -189,6 +189,18 @@ export interface Engine {
     yoyo:boolean,                       //Should the direction reverse?
     delayBeforeContinue:number         //Delay, in milliseconds, between sections
   ):Path;
+
+  /**
+   * A function for making sprites shoot bullets.
+   */
+  shoot(
+      shooter:DisplayableObject, 
+      angle:number, 
+      offsetFromCenter:number,
+      bulletSpeed:number, 
+      bulletArray:DisplayableObject[], 
+      bulletSprite:()=>DisplayableObject):void;
+  
     
 }
 
