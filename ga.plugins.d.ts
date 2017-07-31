@@ -25,6 +25,23 @@ export interface Path {
 
 export interface Camera {
 
+    x:number;
+    y:number;
+    centerX:number;
+    centerY:number;
+    readonly rightInnerBoundary:number;
+    readonly leftInnerBoundary:number;
+    readonly topInnerBoundary:number;
+    readonly bottomInnerBoundary:number;
+
+    /**
+     * Make it follow a sprite
+     */
+    follow(sprite:DisplayableObject):void;
+    /**
+     * center the camera over a sprite
+     */
+    centerOver(sprite:DisplayableObject):void;
 }
 
 export interface Sound  {
@@ -199,7 +216,15 @@ shoot(
     bulletArray:DisplayableObject[], 
     bulletSprite:()=>DisplayableObject):void;
   
-    
+/**
+ * method that creates and returns a camera for a scrolling game world.   
+ *    
+ * @world   worldObject
+ * @canvas  theCanvas
+ * @return  Camera
+ */
+worldCamera(world:DisplayableObject|Bounds, canvas:HTMLCanvasElement):Camera;
+
 }
 
 } // end namespace GA
