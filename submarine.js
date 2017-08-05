@@ -1,18 +1,35 @@
 "use strict";
+var Missiles = (function () {
+    function Missiles() {
+        this.items = [];
+    }
+    Missiles.prototype.play = function (cycle) {
+        this.items = this.items.filter(function (item) {
+            if (item.y == horizon.ay) {
+                g.remove(item);
+                return false;
+            }
+            return true;
+        });
+        g.move(this.items);
+    };
+    return Missiles;
+}());
 var SZ = 8;
 var g = new ga(80 * SZ, 60 * SZ, setup);
 g.start();
 var CRUISE_VELOCITY = 2;
-var cruise, submarines, bombs, sea, scoreDisplay, end;
+var cruise, submarines, bombs, missiles, horizon, sea, scoreDisplay, end;
 function setup() {
     console.log("setup", "canvas.w", g.canvas.width, "canvas.h", g.canvas.height);
     g.backgroundColor = "white";
     g.canvas.style.border = "1px black dashed";
     var deepY = 9 * SZ;
-    var sea = g.rectangle(g.canvas.width, g.canvas.height - deepY, "cyan");
+    sea = g.rectangle(g.canvas.width, g.canvas.height - deepY, "cyan");
     sea.setPosition(0, deepY);
     sea.interactive = false;
-    var horizon = g.line("blue", 1, 0, sea.y + 1, sea.width, sea.y + 1);
+    horizon = g.line("blue", 1, 0, sea.y + 1, sea.width, sea.y + 1);
+    horizon.lineJoin = "bevel";
     g.key.leftArrow.press = function () {
         cruise.vx = -CRUISE_VELOCITY;
     };
@@ -63,6 +80,7 @@ function setup() {
         if (!collision)
             g.move(cruise);
     };
+    missiles = new Missiles();
     var SUB_NUMBER = 4;
     submarines = new Array(SUB_NUMBER);
     var _loop_1 = function () {
@@ -82,12 +100,31 @@ function setup() {
             g.wait(g.randomInt(750, 1500), function () { return sub.visible = true; });
         };
         sub.play = function (cycle) {
-            if (cycle % 3 === 0)
+            var pos = cruise.x + cruise.halfWidth;
+            if (sub.vx > 0 && sub.x == pos) {
+                sub.fillStyle = "red";
+                sub.fire();
+            }
+            else if (sub.vx < 0 && sub.x == pos) {
+                sub.fillStyle = "red";
+                sub.fire();
+            }
+            else {
+                sub.fillStyle = "black";
+            }
+            if (cycle % 3 === 0) {
                 g.move(sub);
+            }
         };
         sub.strike = function () {
             sub.visible = false;
             scoreDisplay.increment();
+        };
+        var shoot_angle = Math.PI / 2;
+        sub.fire = function () {
+            g.shoot(sub, shoot_angle, -10, -1, missiles.items, function () {
+                return g.rectangle(2, 10, "gray");
+            });
         };
         submarines.push(sub);
     };
@@ -170,4 +207,5 @@ function play() {
     bombs.filter(function (b) { return b.visible; }).forEach(function (b) { return b.play(cycle); });
     submarines.filter(function (s) { return s.visible; }).forEach(function (s) { return s.play(cycle); });
     cruise.play(cycle);
+    missiles.play(cycle);
 }

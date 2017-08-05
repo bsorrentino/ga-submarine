@@ -34,9 +34,11 @@ export interface DisplayableObject {
     alpha:number;
     parent:DisplayableObject;
     
+    layer:number;
+
     readonly gx:number;
     readonly gY:number;
-    readonly halfWdth:number;
+    readonly halfWidth:number;
     readonly halfHeight:number;
     readonly position:Coordinate;
     readonly centerX:number;
@@ -71,8 +73,15 @@ export interface DisplayableObject {
     add(...sprites: DisplayableObject[]):void;
     remove(...sprites: DisplayableObject[]):void;
 
+    // Sahdow
+    shadow:boolean;
+    shadowColor:string; // = "rgba(100, 100, 100, 0.5)";
+    shadowOffsetX:number;
+    shadowOffsetY:number;
+    shadowBlur:number;
+
     // Allow extension
-    [key: string]: any
+    //[key: string]: any
 
 }
 
@@ -88,6 +97,20 @@ export interface Sprite extends DisplayableObject {
 }
 
 export interface Line extends DisplayableObject {
+    ax:number;
+    ay:number;
+    bx:number;
+    by:number;
+    lineWidth:number;
+
+    strokeStyle:string;
+
+    /**
+     * The `lineJoin` style.
+     * Options are "round", "mitre" and "bevel".
+     */
+    lineJoin:"round" | "mitre" | "bevel";
+
 }
 
 export interface Text extends DisplayableObject {
@@ -95,7 +118,8 @@ export interface Text extends DisplayableObject {
 }
 
 export interface Rectangle extends DisplayableObject {
-  
+    fillStyle:string;
+    strokeStyle:string;
     /**
      * sprite to set the point around which the sprite should rotate.
      * 0.5 is the default center point. Assign any percentage between

@@ -2,13 +2,14 @@
 /**
  * 
  */
-interface Submarine extends GA.DisplayableObject {
+interface Submarine extends GA.Rectangle {
 
   play:(cycle:number)=>void;
 
   start:()=>void;
   strike:()=>void
 
+  fire:()=>void;
 }
 
 interface Bomb extends GA.DisplayableObject {
@@ -37,6 +38,28 @@ interface ScoreDisplay extends GA.Text {
 
 }
 
+class Torpedoes {
+  items:Array<GA.DisplayableObject>
+
+  constructor(  ) {
+    this.items = [];
+  }
+
+  play(cycle:number):void {
+
+    this.items = this.items.filter( (item) => {
+      if( item.y == horizon.ay ) {
+        g.remove( item );
+        return false;
+      }
+
+      return true;
+    });
+    g.move( this.items );
+  }
+
+}
+
 const SZ = 8;
 
 let g = new ga( 80*SZ, 60*SZ, setup);
@@ -48,6 +71,8 @@ const CRUISE_VELOCITY = 2;
 var cruise:Cruise,
     submarines:Array<Submarine>,
     bombs:Array<Bomb>,
+    torpedoes:Torpedoes,
+    horizon:GA.Line,
     sea:GA.DisplayableObject,
     scoreDisplay:ScoreDisplay,
     end
@@ -65,12 +90,12 @@ function setup() {
 
   let deepY = 9*SZ;
 
-  let sea = g.rectangle( g.canvas.width,  g.canvas.height - deepY, "cyan" );
+  sea = g.rectangle( g.canvas.width,  g.canvas.height - deepY, "cyan" );
   sea.setPosition( 0, deepY );
   sea.interactive = false;
 
-  let horizon = g.line( "blue", 1, 0, sea.y+1, sea.width, sea.y+1);
-
+  horizon = g.line( "blue", 1, 0, sea.y+1, sea.width, sea.y+1);
+  horizon.lineJoin = "bevel";
   //let scene = g.group();
 
   g.key.leftArrow.press = () => {
@@ -137,6 +162,8 @@ function setup() {
   // SUBMARINES
   // 
 
+  torpedoes = new Torpedoes();
+
   const SUB_NUMBER = 4;
 
   submarines = new Array<Submarine>( SUB_NUMBER );
@@ -162,7 +189,22 @@ function setup() {
 
     sub.play = ( cycle:number ) => {
 
-      if( cycle%3===0 ) g.move(sub);
+        let pos = cruise.x + cruise.halfWidth;
+        //console.log(cruise.x, cruise.halfWidth );
+        if( sub.vx > 0 && sub.x == pos) {
+          sub.fillStyle = "red";
+          sub.fire();       
+        }
+        else if( sub.vx < 0 && sub.x == pos ) {
+          sub.fillStyle = "red";   
+          sub.fire();       
+        }
+        else {
+          sub.fillStyle = "black";
+        }
+      if( cycle%3===0 ) { 
+        g.move(sub);
+      }
     }
 
     sub.strike = () => {
@@ -171,6 +213,12 @@ function setup() {
       scoreDisplay.increment();
     }
 
+    let shoot_angle = Math.PI / 2;
+    sub.fire = () => {
+      g.shoot( sub, shoot_angle , -10, -1, torpedoes.items, () => {
+        return g.rectangle( 2, 10, "gray");
+      })
+    }
     submarines.push(  sub  );
   }
 
@@ -284,7 +332,7 @@ let cycle = 0;
 function play() {
 
     ++cycle;
-
+    
     if( cycle%20 === 0 ) submarines.filter( (s) => !s.visible ).forEach( (s) => s.start() );
 
     bombs.filter( (b) => b.visible ).forEach( (b) => b.play(cycle) );
@@ -292,6 +340,8 @@ function play() {
     submarines.filter((s) => s.visible).forEach( (s) => s.play(cycle) );
 
     cruise.play( cycle );
+
+    torpedoes.play( cycle );
 
 
 }
