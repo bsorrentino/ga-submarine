@@ -62,7 +62,7 @@ class Torpedoes {
 
 const SZ = 8;
 
-let g = new ga( 80*SZ, 60*SZ, setup);
+let g = new ga( 80*SZ, 60*SZ, setup, [ "submarine.json"]);
 
 g.start();
 

@@ -5,6 +5,9 @@ export type Coordinate = { x:number, y:number };
 
 export type Bounds = { x:number, y:number, width:number, heignt:number };
 
+/**
+ * 
+ */
 export interface KeyHandler {
 
     readonly code:number;
@@ -14,6 +17,9 @@ export interface KeyHandler {
     release:() => void;
 }
 
+/**
+ * 
+ */
 export interface DisplayableObject {
     x:number;
     y:number;
@@ -85,15 +91,26 @@ export interface DisplayableObject {
 
 }
 
+/**
+ * 
+ */
 export interface Group extends DisplayableObject {
 
 }
 
+/**
+ * 
+ */
 export interface Sprite extends DisplayableObject {
     loop:boolean;
+    playing:boolean;
 
+    show(frameNumber:number):void;
+    playSequence(sequenceArray:Array<any>):void;
     play():void;
     stop():void;
+
+    
 }
 
 export interface Line extends DisplayableObject {
@@ -138,12 +155,30 @@ export interface Stage extends DisplayableObject {
 
 }
 
+/**
+ * 
+ */
+interface Assets {
+    whenLoaded:()=>void;
+    loadHandler:()=>void;
+
+    load(sources:Array<string>):void;
+}
+
+/**
+ * 
+ */
 export interface Engine {
 
     /**
      * 
      */
     new( heightPx:number, widthPx:number, initialState:Function, assets?:Array<string> ):Engine;
+
+    /**
+     * 
+     */
+    assets:Assets;
 
     /**
      * 
@@ -245,6 +280,19 @@ export interface Engine {
      * 
      */
     group(...sprites: DisplayableObject[]):Group;
+
+    /**
+     * 
+     * creates and returns a sprite using:
+     *  a JavaScript Image object, 
+     *  a tileset `frame`, 
+     *  a `filmstrip`, 
+     *  or a frame from a texture atlas (in standard Texture Packer format).
+     * 
+     * @param source.
+     */
+    sprite(source:Array<string>|string):Sprite ;
+  
 }
 
 } // end namespace GA

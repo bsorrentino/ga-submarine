@@ -1,9 +1,9 @@
 "use strict";
-var Missiles = (function () {
-    function Missiles() {
+var Torpedoes = (function () {
+    function Torpedoes() {
         this.items = [];
     }
-    Missiles.prototype.play = function (cycle) {
+    Torpedoes.prototype.play = function (cycle) {
         this.items = this.items.filter(function (item) {
             if (item.y == horizon.ay) {
                 g.remove(item);
@@ -13,13 +13,13 @@ var Missiles = (function () {
         });
         g.move(this.items);
     };
-    return Missiles;
+    return Torpedoes;
 }());
 var SZ = 8;
 var g = new ga(80 * SZ, 60 * SZ, setup);
 g.start();
 var CRUISE_VELOCITY = 2;
-var cruise, submarines, bombs, missiles, horizon, sea, scoreDisplay, end;
+var cruise, submarines, bombs, torpedoes, horizon, sea, scoreDisplay, end;
 function setup() {
     console.log("setup", "canvas.w", g.canvas.width, "canvas.h", g.canvas.height);
     g.backgroundColor = "white";
@@ -80,7 +80,7 @@ function setup() {
         if (!collision)
             g.move(cruise);
     };
-    missiles = new Missiles();
+    torpedoes = new Torpedoes();
     var SUB_NUMBER = 4;
     submarines = new Array(SUB_NUMBER);
     var _loop_1 = function () {
@@ -122,7 +122,7 @@ function setup() {
         };
         var shoot_angle = Math.PI / 2;
         sub.fire = function () {
-            g.shoot(sub, shoot_angle, -10, -1, missiles.items, function () {
+            g.shoot(sub, shoot_angle, -10, -1, torpedoes.items, function () {
                 return g.rectangle(2, 10, "gray");
             });
         };
@@ -207,5 +207,5 @@ function play() {
     bombs.filter(function (b) { return b.visible; }).forEach(function (b) { return b.play(cycle); });
     submarines.filter(function (s) { return s.visible; }).forEach(function (s) { return s.play(cycle); });
     cruise.play(cycle);
-    missiles.play(cycle);
+    torpedoes.play(cycle);
 }
