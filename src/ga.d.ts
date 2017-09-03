@@ -86,6 +86,9 @@ export interface DisplayableObject {
     shadowOffsetY:number;
     shadowBlur:number;
 
+    // Collison Area
+    collisionArea?:Bounds
+    
     // Allow extension
     //[key: string]: any
 
@@ -106,7 +109,7 @@ export interface Sprite extends DisplayableObject {
     playing:boolean;
 
     show(frameNumber:number):void;
-    playSequence(sequenceArray:Array<any>):void;
+    playSequence(sequenceArray:Array<number>):void;
     play():void;
     stop():void;
 
@@ -173,7 +176,7 @@ export interface Engine {
     /**
      * 
      */
-    new( heightPx:number, widthPx:number, initialState:Function, assets?:Array<string> ):Engine;
+    new( heightPx:number, widthPx:number, initialState:Function, assets?:Array<string>, load?:Function ):Engine;
 
     /**
      * 
@@ -217,6 +220,12 @@ export interface Engine {
      */
     backgroundColor:string;
 
+    /**
+     * An array that stores functions which should be run inside Ga's core `update` game loop. 
+     * Just push any function you write into this array, and ga will run it in a continuous loop.
+     */
+    updateFunctions:[ ()=> void ];
+  
     /**
      * Optionally hide the mouse pointer
      */
