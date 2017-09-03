@@ -4,7 +4,20 @@
  */
 interface Submarine extends GA.Rectangle {
 
-  play:(cycle:number)=>void;
+  playit:(cycle:number)=>void;
+
+  start:()=>void;
+  strike:()=>void
+
+  fire:()=>void;
+}
+
+/**
+ * 
+ */
+interface Submarine2 extends GA.Sprite {
+
+  playit:(cycle:number)=>void;
 
   start:()=>void;
   strike:()=>void
@@ -62,14 +75,17 @@ class Torpedoes {
 
 const SZ = 8;
 
-let g = new ga( 80*SZ, 60*SZ, setup, [ "submarine.json"]);
+let g = new ga( 80*SZ, 60*SZ, 
+                setup, [ 
+                  "./images/submarine.json"
+                ], load);
 
 g.start();
 
 const CRUISE_VELOCITY = 2;
 
 var cruise:Cruise,
-    submarines:Array<Submarine>,
+    submarines:Array<Submarine|Submarine2>,
     bombs:Array<Bomb>,
     torpedoes:Torpedoes,
     horizon:GA.Line,
@@ -77,6 +93,13 @@ var cruise:Cruise,
     scoreDisplay:ScoreDisplay,
     end
 ;
+
+/**
+ * 
+ */
+function load() {
+  console.log( "LOADED");
+}
 
 /** 
     `setup` function that will run only once.
@@ -169,7 +192,10 @@ function setup() {
   submarines = new Array<Submarine>( SUB_NUMBER );
   for( var ii = 0; ii < SUB_NUMBER ; ++ii ) {
 
-    let sub = <Submarine>g.rectangle(11*SZ, 3*SZ, "black" );
+    let sub = 
+        //<Submarine>g.rectangle(11*SZ, 3*SZ, "black" ) ; 
+        <Submarine2>g.sprite( ["submarine0.png", "submarine1.png", "submarine2.png"] );
+
     sub.visible = false;
 
     sub.start =  () => {
@@ -184,23 +210,27 @@ function setup() {
       }
       sub.y = g.randomInt( sea.y, sea.height + sea.y) + sub.height;
 
-      g.wait( g.randomInt( 750, 1500 ), () => sub.visible = true);
+      g.wait( g.randomInt( 750, 1500 ), () => { 
+        sub.visible = true; 
+        //sub.show(1); 
+        sub.play();
+      });
     }
 
-    sub.play = ( cycle:number ) => {
+    sub.playit = ( cycle:number ) => {
 
         let pos = cruise.x + cruise.halfWidth;
         //console.log(cruise.x, cruise.halfWidth );
         if( sub.vx > 0 && sub.x == pos) {
-          sub.fillStyle = "red";
+          //sub.fillStyle = "red";
           sub.fire();       
         }
         else if( sub.vx < 0 && sub.x == pos ) {
-          sub.fillStyle = "red";   
+          //sub.fillStyle = "red";   
           sub.fire();       
         }
         else {
-          sub.fillStyle = "black";
+          //sub.fillStyle = "black";
         }
       if( cycle%3===0 ) { 
         g.move(sub);
@@ -217,7 +247,7 @@ function setup() {
     sub.fire = () => {
       g.shoot( sub, shoot_angle , -10, -1, torpedoes.items, () => {
         return g.rectangle( 2, 10, "gray");
-      })
+      });
     }
     submarines.push(  sub  );
   }
@@ -324,7 +354,6 @@ function setup() {
     //Change the state to `play`
   g.state = play;
   
-  
 }
 
 let cycle = 0;
@@ -337,7 +366,7 @@ function play() {
 
     bombs.filter( (b) => b.visible ).forEach( (b) => b.play(cycle) );
    
-    submarines.filter((s) => s.visible).forEach( (s) => s.play(cycle) );
+    submarines.filter((s) => s.visible).forEach( (s) => s.playit(cycle) );
 
     cruise.play( cycle );
 

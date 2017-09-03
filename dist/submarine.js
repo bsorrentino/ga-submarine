@@ -16,10 +16,15 @@ var Torpedoes = (function () {
     return Torpedoes;
 }());
 var SZ = 8;
-var g = new ga(80 * SZ, 60 * SZ, setup);
+var g = new ga(80 * SZ, 60 * SZ, setup, [
+    "./images/submarine.json"
+], load);
 g.start();
 var CRUISE_VELOCITY = 2;
 var cruise, submarines, bombs, torpedoes, horizon, sea, scoreDisplay, end;
+function load() {
+    console.log("LOADED");
+}
 function setup() {
     console.log("setup", "canvas.w", g.canvas.width, "canvas.h", g.canvas.height);
     g.backgroundColor = "white";
@@ -84,7 +89,7 @@ function setup() {
     var SUB_NUMBER = 4;
     submarines = new Array(SUB_NUMBER);
     var _loop_1 = function () {
-        var sub = g.rectangle(11 * SZ, 3 * SZ, "black");
+        var sub = g.sprite(["submarine0.png", "submarine1.png", "submarine2.png"]);
         sub.visible = false;
         sub.start = function () {
             var rnd = g.randomInt(0, 100);
@@ -97,20 +102,20 @@ function setup() {
                 g.stage.putLeft(sub);
             }
             sub.y = g.randomInt(sea.y, sea.height + sea.y) + sub.height;
-            g.wait(g.randomInt(750, 1500), function () { return sub.visible = true; });
+            g.wait(g.randomInt(750, 1500), function () {
+                sub.visible = true;
+                sub.play();
+            });
         };
-        sub.play = function (cycle) {
+        sub.playit = function (cycle) {
             var pos = cruise.x + cruise.halfWidth;
             if (sub.vx > 0 && sub.x == pos) {
-                sub.fillStyle = "red";
                 sub.fire();
             }
             else if (sub.vx < 0 && sub.x == pos) {
-                sub.fillStyle = "red";
                 sub.fire();
             }
             else {
-                sub.fillStyle = "black";
             }
             if (cycle % 3 === 0) {
                 g.move(sub);
@@ -205,7 +210,7 @@ function play() {
     if (cycle % 20 === 0)
         submarines.filter(function (s) { return !s.visible; }).forEach(function (s) { return s.start(); });
     bombs.filter(function (b) { return b.visible; }).forEach(function (b) { return b.play(cycle); });
-    submarines.filter(function (s) { return s.visible; }).forEach(function (s) { return s.play(cycle); });
+    submarines.filter(function (s) { return s.visible; }).forEach(function (s) { return s.playit(cycle); });
     cruise.play(cycle);
     torpedoes.play(cycle);
 }
