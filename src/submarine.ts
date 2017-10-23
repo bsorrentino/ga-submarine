@@ -2,7 +2,7 @@
 /**
  * 
  */
-interface Submarine extends GA.Rectangle {
+interface Submarine extends /*GA.Rectangle*/ GA.Sprite {
 
   playit:(cycle:number)=>void;
 
@@ -15,7 +15,7 @@ interface Submarine extends GA.Rectangle {
 /**
  * 
  */
-interface Submarine2 extends GA.Sprite {
+interface Submarine2 extends /*GA.Rectangle*/ GA.Sprite {
 
   playit:(cycle:number)=>void;
 
@@ -77,7 +77,8 @@ const SZ = 8;
 
 let g = new ga( 80*SZ, 60*SZ, 
                 setup, [ 
-                  "./images/submarine.json"
+                  "./images/submarine.json",
+                  "./images/cruise.json"
                 ], load);
 
 g.start();
@@ -170,9 +171,11 @@ function setup() {
   ///
   /// CRUISE
   /// 
-  cruise = <any>g.rectangle(11*SZ, 3*SZ, "black" );
+  //cruise = <any>g.rectangle(11*SZ, 3*SZ, "black" );
+  cruise = g.sprite( "cruise0.png" );
   
-  g.stage.putCenter( cruise ); cruise.y = 6*SZ;
+  g.stage.putCenter( cruise ); 
+  cruise.y = sea.y - cruise.height;
 
   cruise.play = (cycle:number) => {
     let collision = g.contain(cruise, g.stage.localBounds);
@@ -192,9 +195,9 @@ function setup() {
   submarines = new Array<Submarine>( SUB_NUMBER );
   for( var ii = 0; ii < SUB_NUMBER ; ++ii ) {
 
-    let sub = 
+    let sub:Submarine = 
         //<Submarine>g.rectangle(11*SZ, 3*SZ, "black" ) ; 
-        <Submarine2>g.sprite( ["submarine0.png", "submarine1.png", "submarine2.png"] );
+        g.sprite( "submarine0.png" /*["submarine0.png", "submarine1.png", "submarine2.png"]*/ );
 
     sub.visible = false;
 
@@ -213,7 +216,7 @@ function setup() {
       g.wait( g.randomInt( 750, 1500 ), () => { 
         sub.visible = true; 
         //sub.show(1); 
-        sub.play();
+        //sub.play();
       });
     }
 

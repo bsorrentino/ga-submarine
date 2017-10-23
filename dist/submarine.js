@@ -17,7 +17,8 @@ var Torpedoes = (function () {
 }());
 var SZ = 8;
 var g = new ga(80 * SZ, 60 * SZ, setup, [
-    "./images/submarine.json"
+    "./images/submarine.json",
+    "./images/cruise.json"
 ], load);
 g.start();
 var CRUISE_VELOCITY = 2;
@@ -77,9 +78,9 @@ function setup() {
             scoreDisplay.content = String(scoreDisplay.currentScore);
         };
     }
-    cruise = g.rectangle(11 * SZ, 3 * SZ, "black");
+    cruise = g.sprite(["cruise0.png"]);
     g.stage.putCenter(cruise);
-    cruise.y = 6 * SZ;
+    cruise.y = sea.y - cruise.height;
     cruise.play = function (cycle) {
         var collision = g.contain(cruise, g.stage.localBounds);
         if (!collision)
@@ -89,7 +90,7 @@ function setup() {
     var SUB_NUMBER = 4;
     submarines = new Array(SUB_NUMBER);
     var _loop_1 = function () {
-        var sub = g.sprite(["submarine0.png", "submarine1.png", "submarine2.png"]);
+        var sub = g.sprite(["submarine0.png"]);
         sub.visible = false;
         sub.start = function () {
             var rnd = g.randomInt(0, 100);
@@ -104,7 +105,6 @@ function setup() {
             sub.y = g.randomInt(sea.y, sea.height + sea.y) + sub.height;
             g.wait(g.randomInt(750, 1500), function () {
                 sub.visible = true;
-                sub.play();
             });
         };
         sub.playit = function (cycle) {
