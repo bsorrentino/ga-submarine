@@ -1,14 +1,14 @@
 
 declare namespace GA {
 
-export type Coordinate = { x:number, y:number };
+type Coordinate = { x:number, y:number };
 
-export type Bounds = { x:number, y:number, width:number, heignt:number };
+type Bounds = { x:number, y:number, width:number, height:number };
 
 /**
- * 
+ *
  */
-export interface KeyHandler {
+interface KeyHandler {
 
     readonly code:number;
     readonly isDown:boolean;
@@ -18,32 +18,37 @@ export interface KeyHandler {
 }
 
 /**
- * 
+ *
  */
-export interface DisplayableObject {
+interface DisplayableObject  {
     x:number;
     y:number;
-     
+
     //Velocity.
     vx:number;
     vy:number;
+
+    scaleX:number;
+    scaleY:number;
     
     pivotX:number;
     pivotY:number;
-    
+
     width:number;
     height:number;
-    
+
     visible:boolean;
     interactive:boolean;
     rotation:number;
     alpha:number;
     parent:DisplayableObject;
-    
+
     layer:number;
 
+    draggable:boolean;
+    
     readonly gx:number;
-    readonly gY:number;
+    readonly gy:number;
     readonly halfWidth:number;
     readonly halfHeight:number;
     readonly position:Coordinate;
@@ -72,12 +77,14 @@ export interface DisplayableObject {
     // Children
 
     children:DisplayableObject[];
-    
-    addChild(sprite:DisplayableObject):void;
-    removeChild(sprite:DisplayableObject):void;
 
-    add(...sprites: DisplayableObject[]):void;
-    remove(...sprites: DisplayableObject[]):void;
+    addChild<T extends DisplayableObject>(sprite:T):void;
+    removeChild<T extends DisplayableObject>(sprite:T):void;
+
+    add<T extends DisplayableObject>(...sprites: T[]):void;
+    remove<T extends DisplayableObject>(...sprites: T[]):void;
+
+    readonly empty:boolean;
 
     // Sahdow
     shadow:boolean;
@@ -88,23 +95,73 @@ export interface DisplayableObject {
 
     // Collison Area
     collisionArea?:Bounds
-    
+
     // Allow extension
     //[key: string]: any
 
 }
 
 /**
- * 
+ * Generic Group
  */
-export interface Group extends DisplayableObject {
+type Group = DisplayableObject;
+
+
+interface InteractiveFeature  {
+  interactive:boolean;
+
+  /**
+   * The `press` and `release` methods. They're `undefined`
+   * for now, but they'll be defined in the game program.
+   */
+  press:()=>void;
+  release:()=>void;
+  over:()=>void;
+  out:()=>void;
+  tap:()=>void;
+
+  /**
+   * The `state` property tells you button's
+   * current state. Set its initial state to "up".
+   */
+  state: "up"|"down"|"over";
+
+  /**
+   * The `action` property tells you whether its being pressed or
+   * released.
+   */
+  action:()=>void;
+
+  /**
+   * `pressed` is a Boolean that helps track whether or not
+   * the button has been pressed down.
+   */
+  pressed:boolean;
+
+  /**
+   * `enabled` is a Boolean which, if false, deactivates the button.
+   */
+  enabled:boolean;
+
+  /**
+   * `hoverOver` is a Boolean which checkes whether the pointer
+   * has hovered over the button.
+  */
+  hoverOver:boolean;
 
 }
 
 /**
- * 
+ *
  */
-export interface Sprite extends DisplayableObject {
+interface Sprite extends InteractiveFeature,DisplayableObject {
+
+    circular:boolean;
+    radius:number;
+    diameter:number;
+
+    fps:number;
+
     loop:boolean;
     playing:boolean;
 
@@ -113,10 +170,11 @@ export interface Sprite extends DisplayableObject {
     play():void;
     stop():void;
 
-    
+
 }
 
-export interface Line extends DisplayableObject {
+
+interface Line extends DisplayableObject {
     ax:number;
     ay:number;
     bx:number;
@@ -133,58 +191,96 @@ export interface Line extends DisplayableObject {
 
 }
 
-export interface Text extends DisplayableObject {
+interface Text extends DisplayableObject {
     content:string;
 }
 
-export interface Rectangle extends DisplayableObject {
+interface Rectangle extends Sprite {
+    mask:boolean;
+
     fillStyle:string;
     strokeStyle:string;
     /**
      * sprite to set the point around which the sprite should rotate.
      * 0.5 is the default center point. Assign any percentage between
      * 0.01 and 0.99 to shift the center of rotation.
-     * 
+     *
      */
     //rotate:number;
 }
 
-export interface Circle extends DisplayableObject {
+interface Circle extends Sprite {
+
+    mask:boolean;
+
+    fillStyle:string;
+    strokeStyle:string;
     diameter:number;
     radius:number;
 }
 
-export interface Stage extends DisplayableObject {
-
+interface Stage extends Sprite {
+    
+    swapChildren( child1:DisplayableObject, child2:DisplayableObject):void
 }
 
 /**
- * 
+ *
  */
-interface Assets {
+interface Assets extends Array<any> {
     whenLoaded:()=>void;
     loadHandler:()=>void;
 
     load(sources:Array<string>):void;
 }
 
-/**
- * 
- */
-export interface Engine {
+interface Pointer {
+    readonly x:number;
+    readonly y:number;
+    readonly centerX:number;
+    readonly centerY:number;
+    readonly position:Coordinate;
 
+    isDown:boolean;
+    isUp:boolean;
+    tapped:boolean;
+
+    press:()=>void;
+    release:()=>void;
+    tap:()=>void;
+
+
+}
+
+interface Frame extends Bounds {
+  image:string;
+}
+
+interface Frames extends Bounds {
+    image:string;
+    data:Array<[number,number]>;
+    width:number;
+    height:number;
+}
+  
+/**
+ *
+ */
+interface Engine {
+
+    ( heightPx:number, widthPx:number, initialState:Function, assets?:Array<string>, load?:Function ):Engine;
     /**
-     * 
+     *
      */
     new( heightPx:number, widthPx:number, initialState:Function, assets?:Array<string>, load?:Function ):Engine;
 
     /**
-     * 
+     *
      */
     assets:Assets;
 
     /**
-     * 
+     *
      */
     canvas:HTMLCanvasElement;
 
@@ -203,10 +299,15 @@ export interface Engine {
         downArrow :KeyHandler;
         space:KeyHandler;
     };
-    
-    scale:number;
+
+    /*
+     * The game's screen's scale.
+     *
+     */
+    //scale:number;
+
     /**
-     * 
+     *
      */
     stage:Stage;
 
@@ -214,25 +315,30 @@ export interface Engine {
      * The frame rate will default to 60 fps is you don't set it
      */
     fps:number;
-  
+
     /**
      * Optionally change the background color
      */
     backgroundColor:string;
 
     /**
-     * An array that stores functions which should be run inside Ga's core `update` game loop. 
+     * An array that stores functions which should be run inside Ga's core `update` game loop.
      * Just push any function you write into this array, and ga will run it in a continuous loop.
      */
     updateFunctions:[ ()=> void ];
-  
+
+    /**
+     *
+     */
+    pointer:Pointer;
+
     /**
      * Optionally hide the mouse pointer
      */
     hidePointer():void;
 
     /**
-     * 
+     *
      */
     showPointer():void;
 
@@ -242,66 +348,101 @@ export interface Engine {
     state:Function;
 
     /**
-     * 
+     *
      */
     start():void;
 
     /**
-     * 
+     *
      */
     pause():void;
 
     /**
-     * 
+     *
      */
     resume():void;
 
     /**
      * remove any sprite, or an argument list of sprites, from its parent.
-     * 
+     *
      */
-    remove(spritesToRemove:DisplayableObject):void;
+    remove<T extends DisplayableObject>(spritesToRemove:T|T[]):void;
+
+    /**
+     * The `frame` method returns and object that defines
+     * in the position and size of a sub-image in a tileset. Use it if you
+     * want to create a sprite from a sub-image inside an Image object.
+     * arguments: sourceString, xPostionOfSubImage, yPositionOfSubImage,
+     * widthOfSubImage, heightOfSubImage.
+     */
+    frame(source:string, x:number, y:number, width:number, height:number):Frame;
+
+    /** 
+    * The `frames` function returns and object that defines
+    * the position and size of many sub-images in a single tileset image.
+    * arguments: sourceString, 2DArrayOfXandYPositions, widthOfSubImage,
+    * heightOfSubImage.
+    */
+    frames(source:string, arrayOfPositions:Array<[number,number]>, width:number, height:number):Frames;
 
     /**
      * 
+     * If you have a complex animation in a single image, you can use the
+     * `filmstrip` method to automatically create an array of x,y
+     * coordinates for each animation frame.
+     * 
+     * @param imageName 
+     * @param frameWidth
+     * @param frameHeight
+     * @param spacing should be included if there's any default spacing (padding) around tileset images.
      */
-    rectangle( widthPx:number, heightPx:number, fillColor:string, strokeColor?:string, lineWidth?:number, x?:number, y?:number ):Rectangle;
+    filmstrip(imageName:string, frameWidth:number, frameHeight:number, spacing?:number):Frames;
     
     /**
-     * 
+     *
      */
-    circle( diameter:number, fillstyle:string, stroketyle?:string, lineWidth?:number, x?:number, y?:number ):Circle;
+    rectangle<T extends Rectangle>( widthPx:number, heightPx:number, fillColor?:string, strokeColor?:string, lineWidth?:number, x?:number, y?:number ):T;
+
+    /**
+     *
+     */
+    circle<T extends Circle>( diameter:number, fillstyle?:string, stroketyle?:string, lineWidth?:number, x?:number, y?:number ):T;
 
     /**
      * `line` creates and returns a line with a start and end points.
      * arguments: lineColor, lineWidth, startX, startY, endX, endY.
-     * 
+     *
      */
-    line(strokeStyle?:string, lineWidth?:number, x?:number, y?:number, endX?:number, endY?:number):Line;
+    line<T extends Line>(strokeStyle?:string, lineWidth?:number, x?:number, y?:number, endX?:number, endY?:number):T;
 
     /**
-     * 
+     *
      * The font family name will be the same as the font's file name
      */
     text(content:string, font:string, fillstype:string, x?:number, y?:number):Text;
 
     /**
-     * 
+     *
      */
-    group(...sprites: DisplayableObject[]):Group;
+    group<T extends Group>(...sprites: DisplayableObject[]):T;
 
     /**
-     * 
+     *
      * creates and returns a sprite using:
-     *  a JavaScript Image object, 
-     *  a tileset `frame`, 
-     *  a `filmstrip`, 
+     *  a JavaScript Image object,
+     *  a tileset `frame`,
+     *  a `filmstrip`,
      *  or a frame from a texture atlas (in standard Texture Packer format).
-     * 
+     *
      * @param source.
      */
-    sprite(source:Array<string>|string):Sprite ;
-  
+    sprite<T extends Sprite>(source:Array<string>|string|Frame|Frames):T ;
+
+    /**
+     * An interactive button with `up` `over` and `down` states. Optional `press` and `release` actions.
+     */
+    button(source:Array<string>|string|Frame|Frames):Sprite ;
+
 }
 
 } // end namespace GA
