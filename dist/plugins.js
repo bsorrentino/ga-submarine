@@ -156,6 +156,7 @@ Here's the table of contents to get you started:
 `exitFullscreen`: used by `enableFullscreen` to exit fullsrcreen mode.
 `alignFullscreen`: Used by `enableFullscreen` to scale and center the canvas in fullscreen mode.
 `enableFullscreen`: Enables fullscreen mode when the user clicks or touches the canvas.
+`noBlurScale`: disable blur effect for scaled images, to support scaled pixel art
 
 ### Chapter 8: Sound
 
@@ -1156,7 +1157,7 @@ GA.plugins = function(ga) {
     //Sine
     sine: function(x) {return Math.sin(x * Math.PI / 2);},
     sineSquared: function(x) {return Math.pow(Math.sin(x * Math.PI / 2), 2);},
-    sineCubed: function(x) {return Math.pow(Math.sin(x * Math.PI / 2), 2);},
+    sineCubed: function(x) {return Math.pow(Math.sin(x * Math.PI / 2), 3);},
     inverseSine: function(x) {return 1 - Math.sin((1 - x) * Math.PI / 2);},
     inverseSineSquared: function(x) {return 1 - Math.pow(Math.sin((1 - x) * Math.PI / 2), 2);},
     inverseSineCubed: function(x) {return 1 - Math.pow(Math.sin((1 - x) * Math.PI / 2), 3);},
@@ -4556,7 +4557,7 @@ GA.plugins = function(ga) {
   //`requestFullscreen` is used by `enableFullscreen` to launch
   //fullscreen mode.
   ga.requestFullScreen = function() {
-    if (!document.fullscreenEnabled) {
+    if (document.fullscreenEnabled && document.fullscreenElement !== null) {
       ga.canvas.requestFullscreen();
     }
   };
@@ -4564,7 +4565,7 @@ GA.plugins = function(ga) {
   //`exitFullscreen` is used by `enableFullscreen` to exit
   //fullscreen mode.
   ga.exitFullScreen = function() {
-    if (document.fullscreenEnabled) {
+    if (document.fullscreenEnabled && document.fullscreenElement === null) {
       document.exitFullscreen();
     }
   };
@@ -5372,5 +5373,18 @@ GA.plugins = function(ga) {
     //Return the `impulse`.
     return impulse;
   };
+
+
+  //### noBlurScale
+  /*
+  disable blur effect for scaled images, to support pixel art
+  */
+      ga.noBlurScale = function() {
+        ga.canvas.ctx.imageSmoothingEnabled = false;
+        ga.canvas.ctx.mozImageSmoothingEnabled = false;
+        ga.canvas.ctx.imageSmoothingEnabled = false; /// future
+    }
+
+
 //plugins ends
 };

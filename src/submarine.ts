@@ -1,3 +1,4 @@
+/// <reference types="kka-ga" />
 
 /**
  * 
@@ -75,12 +76,11 @@ class Torpedoes {
 
 const SZ = 8;
 
-let g = new ga( 80*SZ, 60*SZ, 
+const g = new ga( 80*SZ, 60*SZ, 
                 setup, [ 
-                  "./images/submarine.json",
-                  "./images/cruise.json"
+                  "/images/submarine.json",
+                  "/images/cruise.json"
                 ], load);
-
 g.start();
 
 const CRUISE_VELOCITY = 2;
@@ -99,7 +99,7 @@ var cruise:Cruise,
  * 
  */
 function load() {
-  console.log( "LOADED");
+  console.log( "ASSETS LOADED!!!");
 }
 
 /** 
@@ -146,7 +146,7 @@ function setup() {
   ///
   /// SCORE
   /// 
-  scoreDisplay = <any>g.text("0", "20px emulogic", "black");
+  scoreDisplay = g.text("0", "20px emulogic", "black") as ScoreDisplay;
   {
     g.stage.putRight(scoreDisplay); let x = scoreDisplay.x - scoreDisplay.width * 6;
     g.stage.putTop(scoreDisplay); scoreDisplay.x = x; scoreDisplay.y += scoreDisplay.height + 5;
@@ -276,7 +276,7 @@ function setup() {
 
       bomb.visible = true;
 
-      var points:[[number]];
+      var points:Array<[number,number]>;
 
       if( bomb.isLeft ) {
         cruise.putLeft(bomb);   

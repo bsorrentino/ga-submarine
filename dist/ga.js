@@ -692,7 +692,7 @@ GA.create = function(width, height, setup, assetsToLoad, load) {
       xOffset = xOffset || 0;
       yOffset = yOffset || 0;
       b.x = (a.x + a.halfWidth - b.halfWidth) + xOffset;
-      b.y = (a.x - b.height) + yOffset;
+      b.y = (a.y - b.height) + yOffset;
 
       //Compensate for the parent's position
       o.compensateForParentPosition(a, b);
@@ -2100,6 +2100,10 @@ GA.create = function(width, height, setup, assetsToLoad, load) {
 
         //Find the file extension of the asset.
         var extension = source.split('.').pop();
+        //Check if it is base64 encoded image
+        var base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
+        var srcSplit = source.split(',').pop();
+        var isBase64 = base64regex.test(srcSplit)
 
         //#### Images
         //Load images that have file extensions that match
@@ -2108,7 +2112,11 @@ GA.create = function(width, height, setup, assetsToLoad, load) {
 
           //Create a new image and add a loadHandler
           var image = new Image();
-          image.addEventListener("load", function() {
+          image.onerror = (err) =>
+            console.error( 'error loading image ' + source, err );
+    
+          image.onload = () => {
+          //image.addEventListener("load", function() {
             //Get the image file name.
             image.name = source;
             self[image.name] = {
@@ -2126,7 +2134,7 @@ GA.create = function(width, height, setup, assetsToLoad, load) {
               }
             };
             self.loadHandler();
-          }, false);
+          }/*, false)*/;
 
           //Set the image's src property so we can start loading the image.
           image.src = source;
@@ -2213,7 +2221,27 @@ GA.create = function(width, height, setup, assetsToLoad, load) {
 
           //Send the request to load the file.
           xhr.send();
-        }
+        }        
+        else if (isBase64 == true) {
+            //Create a new image and add a loadHandler
+            var image = new Image();
+            image.addEventListener("load", function() {
+                //Get the image file name.
+                image.name = source;
+                self[image.name] = {
+                    source: image,
+                    frame: {
+                        x: 0,
+                        y: 0,
+                        w: image.width,
+                        h: image.height
+                    }
+                };
+                self.loadHandler();
+            }, false);
+            //Set the image's src property so we can start loading the image.
+            image.src = source;
+                }
 
         //Display a message if a file type isn't recognized.
         else {
@@ -2231,7 +2259,9 @@ GA.create = function(width, height, setup, assetsToLoad, load) {
       //Get the image's file path.
       var baseUrl = source.replace(/[^\/]*$/, '');
       var image = new Image();
-      image.addEventListener("load", loadImage, false);
+      //image.addEventListener("load", loadImage, false);
+      image.onload = loadImage
+      image.onerror = (err) => console.error( "error loaging image " + baseUrl + json.meta.image, err);
       image.src = baseUrl + json.meta.image;
 
       function loadImage() {

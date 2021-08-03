@@ -17,14 +17,14 @@ var Torpedoes = (function () {
 }());
 var SZ = 8;
 var g = new ga(80 * SZ, 60 * SZ, setup, [
-    "./images/submarine.json",
-    "./images/cruise.json"
+    "/images/submarine.json",
+    "/images/cruise.json"
 ], load);
 g.start();
 var CRUISE_VELOCITY = 2;
 var cruise, submarines, bombs, torpedoes, horizon, sea, scoreDisplay, end;
 function load() {
-    console.log("LOADED");
+    console.log("ASSETS LOADED!!!");
 }
 function setup() {
     console.log("setup", "canvas.w", g.canvas.width, "canvas.h", g.canvas.height);
@@ -78,7 +78,7 @@ function setup() {
             scoreDisplay.content = String(scoreDisplay.currentScore);
         };
     }
-    cruise = g.sprite(["cruise0.png"]);
+    cruise = g.sprite("cruise0.png");
     g.stage.putCenter(cruise);
     cruise.y = sea.y - cruise.height;
     cruise.play = function (cycle) {
@@ -90,7 +90,7 @@ function setup() {
     var SUB_NUMBER = 4;
     submarines = new Array(SUB_NUMBER);
     var _loop_1 = function () {
-        var sub = g.sprite(["submarine0.png"]);
+        var sub = g.sprite("submarine0.png");
         sub.visible = false;
         sub.start = function () {
             var rnd = g.randomInt(0, 100);
