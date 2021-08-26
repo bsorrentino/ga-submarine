@@ -1,9 +1,9 @@
-/// <reference types="kka-ga" />
+import * as GA from '@bsorrentino/ga-ts'
 
 /**
  * 
  */
-interface Submarine extends /*GA.Rectangle*/ GA.Sprite {
+interface Submarine extends GA.Sprite {
 
   playit:(cycle:number)=>void;
 
@@ -16,7 +16,7 @@ interface Submarine extends /*GA.Rectangle*/ GA.Sprite {
 /**
  * 
  */
-interface Submarine2 extends /*GA.Rectangle*/ GA.Sprite {
+interface Submarine2 extends GA.Sprite {
 
   playit:(cycle:number)=>void;
 
@@ -76,11 +76,14 @@ class Torpedoes {
 
 const SZ = 8;
 
-const g = new ga( 80*SZ, 60*SZ, 
+const g = new GA.Engine( 80*SZ, 60*SZ, 
                 setup, [ 
                   "/images/submarine.json",
                   "/images/cruise.json"
                 ], load);
+g.backgroundColor = "white";  
+g.canvas.style.border = "1px black dashed";
+
 g.start();
 
 const CRUISE_VELOCITY = 2;
@@ -109,8 +112,6 @@ function load() {
 function setup() {
   console.log( "setup", "canvas.w", g.canvas.width, "canvas.h", g.canvas.height);
 
-  g.backgroundColor = "white";  
-  g.canvas.style.border = "1px black dashed";
 
   let deepY = 9*SZ;
 
@@ -172,7 +173,7 @@ function setup() {
   /// CRUISE
   /// 
   //cruise = <any>g.rectangle(11*SZ, 3*SZ, "black" );
-  cruise = g.sprite( "cruise0.png" );
+  cruise = g.sprite( "cruise0.png" ) as Cruise;
   
   g.stage.putCenter( cruise ); 
   cruise.y = sea.y - cruise.height;
@@ -197,7 +198,7 @@ function setup() {
 
     let sub:Submarine = 
         //<Submarine>g.rectangle(11*SZ, 3*SZ, "black" ) ; 
-        g.sprite( "submarine0.png" /*["submarine0.png", "submarine1.png", "submarine2.png"]*/ );
+        g.sprite( "submarine0.png" /*["submarine0.png", "submarine1.png", "submarine2.png"]*/ ) as Submarine;
 
     sub.visible = false;
 
@@ -248,8 +249,13 @@ function setup() {
 
     let shoot_angle = Math.PI / 2;
     sub.fire = () => {
-      g.shoot( sub, shoot_angle , -10, -1, torpedoes.items, () => {
-        return g.rectangle( 2, 10, "gray");
+      g.shoot( {
+        shooter:          sub, 
+        angle:            shoot_angle , 
+        offsetFromCenter: -10, 
+        bulletSpeed:      -1, 
+        bulletArray:      torpedoes.items, 
+        bulletSprite:     () => g.rectangle( 2, 10, "gray")
       });
     }
     submarines.push(  sub  );
@@ -301,17 +307,16 @@ function setup() {
             ];    
           
       }
-      let path = g.walkCurve(
-          bomb, //The sprite
-          //An array of Bezier curve points that 
-          //you want to connect in sequence
-          [ points ],
-          100,                   //Total duration, in frames
-          "smoothstep",          //Easing type
-          false,                  //Should the path loop?
-          false,                  //Should the path yoyo?
-          1000                   //Delay in milliseconds between segments
-        );
+
+      g.walkCurve({
+          sprite:             bomb, //The sprite you want to connect in sequence
+          pathArray:          [ points ],//An array of Bezier curve points that
+          totalFrames:        100,                   //Total duration, in frames
+          type:               "smoothstep",          //Easing type
+          loop:               false,                  //Should the path loop?
+          yoyo:               false,                  //Should the path yoyo?
+          delayBeforeContinue:1000                   //Delay in milliseconds between segments
+      })
 
     }
 
