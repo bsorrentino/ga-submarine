@@ -37,6 +37,8 @@ interface Bomb extends GA.DisplayableObject {
   fire:()=>void;
 }
 
+type BombShape = Bomb & (GA.Rectangle | GA.Circle)
+
 interface Cruise extends GA.DisplayableObject {
 
   play:(cycle:number)=>void;
@@ -83,7 +85,6 @@ const g = new GA.Engine( 80*SZ, 60*SZ,
                 ], load);
 g.backgroundColor = "white";  
 g.canvas.style.border = "1px black dashed";
-
 g.start();
 
 const CRUISE_VELOCITY = 2;
@@ -117,7 +118,7 @@ function setup() {
 
   sea = g.rectangle( g.canvas.width,  g.canvas.height - deepY, "cyan" );
   sea.setPosition( 0, deepY );
-  sea.interactive = false;
+
 
   horizon = g.line( "blue", 1, 0, sea.y+1, sea.width, sea.y+1);
   horizon.lineJoin = "bevel";
@@ -268,10 +269,14 @@ function setup() {
 
   //let b1 = g.circle( 10, "red"); b1.isLeft = true;
   //let b2 = g.circle( 10, "black"); b2.isRight = true;
-  let b1:Bomb = <any>g.rectangle( 10, 10,  "red"); b1.isLeft = true;
-  let b2:Bomb = <any>g.circle( 10,  "red") as any; b2.isLeft = true;
-  let b3:Bomb = <any>g.rectangle( 10, 10, "black"); b3.isRight = true;
-  let b4:Bomb = <any>g.circle( 10, "black"); b4.isRight = true;
+  let b1 = g.rectangle( 10, 10,  "red") as BombShape 
+  b1.isLeft = true;
+  let b2 = g.circle( 10,  "red") as BombShape; 
+  b2.isLeft = true;
+  let b3 = g.rectangle( 10, 10, "black") as BombShape
+  b3.isRight = true;
+  let b4 = g.circle( 10, "black") as BombShape
+  b4.isRight = true;
 
   bombs = new Array<Bomb>(  b1, b2, b3, b4 );
 

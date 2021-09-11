@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc --watch",
-    "start": "npx parcel serve index.html"
+    "start": "parcel serve index.html"
   },
   "keywords": [],
   "author": "",
@@ -15,10 +15,10 @@
     "parcel": "^2.0.0-rc.0",
     "parcel-reporter-multiple-static-file-copier": "^1.0.5",
     "parcel-resolver-ignore": "^1.0.2",
-    "typescript": "^4.3.5"
+    "typescript": "^3.4.5"
   },
   "dependencies": {
-    "@bsorrentino/ga-ts": "^1.0.0"
+    "@bsorrentino/ga-ts": "^1.1.0"
   },
   "multipleStaticFileCopier": [
     {
